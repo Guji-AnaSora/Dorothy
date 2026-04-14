@@ -1,0 +1,485 @@
+{
+  "meta": {
+    "code": "zh",
+    "name": "中文",
+    "nativeName": "中文"
+  },
+  "dashboard": {
+    "title": "CRUCIX — 全球风险情报终端",
+    "bootTitle": "CRUCIX 情报引擎",
+    "bootSubtitle": "本地 Palantir · 监测 31 个数据源",
+    "waitingForSweep": "正在等待首次扫描...",
+    "sourcesOk": "数据源 正常",
+    "lastSweep": "上次扫描",
+    "nextSweep": "下次扫描",
+    "sweep": "扫描",
+    "sources": "来源",
+    "delta": "增量",
+    "highAlert": "高度预警",
+    "riskOff": "避险 (Risk-Off)",
+    "riskOn": "风险偏好 (Risk-On)",
+    "mixed": "混合信号",
+    "terminalActive": "终端运行中",
+    "perf": "性能",
+    "perfLow": "低",
+    "perfHigh": "高",
+    "guideBtn": "信号含义解析",
+    "guideKicker": "信号指南",
+    "guideSubtitle": "通俗易懂的解读，为什么要关注，以及不应由此推断出什么。",
+    "guideFooter": "请将这些内容视为解读指南，而非结论。更有力的判断应来自于跨多个层面的相互印证，而非孤立地看待单个信号。",
+    "regimeChip": "战时滞胀风险",
+    "visuals": "视觉效果",
+    "visualsLite": "极简",
+    "visualsFull": "完整",
+    "llmNotConfigured": "LLM 未配置",
+    "llmHelp": "在 .env 中设置 LLM_PROVIDER 即可开启 AI 强化分析"
+  },
+  "boot": {
+    "initializing": "正在初始化 CRUCIX 引擎 v2.1.0",
+    "connecting": "正在连接 {count} 个开源情报源...",
+    "sourceGroup1": "OPENSKY · FIRMS · KIWISDR · 海事监控",
+    "sourceGroup2": "FRED · BLS · EIA · 财政部 · GSCPI",
+    "sourceGroup3": "TELEGRAM · SAFECAST · EPA · WHO · OFAC",
+    "sourceGroup4": "GDELT · NOAA · 专利 · BLUESKY · REDDIT",
+    "sourceGroup5": "USGS · ECB · CVE · COPERNICUS · CELESTRAK",
+    "sweepComplete": "扫描完成 — {ok}/{total} 数据源",
+    "ok": "正常",
+    "acledLayer": "ACLED 冲突监测层",
+    "events": "事件",
+    "degraded": "性能降级",
+    "flightCorridors": "航空走廊",
+    "active": "激活",
+    "dualProjection": "双重投影",
+    "ready": "准备就绪",
+    "intelligenceSynthesis": "情报合成系统"
+  },
+  "panels": {
+    "sensorGrid": "传感器网格",
+    "tradeIdeas": "可操作建议",
+    "osintFeed": "情报流",
+    "osintStream": "实时情报流",
+    "nuclearWatch": "核活动监测",
+    "newsTicker": "实时新闻滚动",
+    "sweepDelta": "扫描增量",
+    "macroMarkets": "宏观与市场",
+    "healthAlerts": "健康预警",
+    "riskGauges": "风险仪表盘",
+    "crossSourceSignals": "跨源关联信号",
+    "signalCore": "核心指标",
+    "seismicWatch": "地震监测",
+    "cyberWatch": "网络安全监测",
+    "spaceWatch": "航天监测",
+    "europeAlerts": "欧洲紧急预警",
+    "ecbIndicators": "欧央行指标",
+    "signalRow": "信号"
+  },
+  "layers": {
+    "airActivity": "空中活动",
+    "thermalSpikes": "热点扫描",
+    "sdrCoverage": "SDR 覆盖",
+    "maritimeWatch": "海事监控",
+    "nuclearSites": "核设施",
+    "conflictEvents": "冲突事件",
+    "healthWatch": "公共卫生",
+    "worldNews": "国际新闻",
+    "osintFeed": "情报源",
+    "theaters": "战区",
+    "nightDet": "夜间探测",
+    "online": "在线",
+    "chokepoints": "地理咽喉",
+    "monitors": "监测站",
+    "fatalities": "伤亡总数",
+    "whoAlerts": "世卫通报",
+    "rssGeolocated": "地理标注新闻",
+    "earthquakes": "地震活动",
+    "seismicEvents": "地震事件",
+    "cyberVulns": "网络漏洞",
+    "spaceActivity": "航天动态",
+    "europeEmergency": "欧洲紧急通知"
+  },
+  "map": {
+    "worldNews": "国际新闻",
+    "healthAlert": "健康预警",
+    "chokepoint": "地理枢纽",
+    "nuclearSite": "核电站/设施",
+    "osintEvent": "情报事件",
+    "thermalDetection": "热点探测",
+    "aircraft": "飞行器",
+    "rssGeolocated": "地理标注 RSS",
+    "airTraffic": "空中交通",
+    "thermalFire": "火灾热点",
+    "conflict": "武装冲突",
+    "sdrReceiver": "SDR 接收机",
+    "scrollToZoom": "滚轮缩放 · 拖拽平移",
+    "globeMode": "3D 球体",
+    "flatMode": "2D 平面",
+    "earthquake": "地震",
+    "disaster": "灾害",
+    "weatherAlert": "天气预警",
+    "epaRadNet": "美国环保署辐射监测站",
+    "spaceStation": "空间站",
+    "gdeltEvent": "GDELT 事件",
+    "meaning": "含义",
+    "matters": "为什么要关注",
+    "notMeaning": "不代表什么",
+    "example": "示例",
+    "close": "关闭"
+  },
+  "ideas": {
+    "confidence": "置信度",
+    "horizon": "预期周期",
+    "risk": "风险因素",
+    "signals": "关联信号",
+    "rationale": "论证逻辑",
+    "aiEnhanced": "AI 强化分析",
+    "llmOff": "AI 已关闭",
+    "pending": "处理中",
+    "llmNotConfigured": "LLM 未配置",
+    "llmHelp": "在 .env 中设置 LLM_PROVIDER 即可开启 AI 强化分析",
+    "disclosure": "本报告仅供参考，不构成任何投资建议或证券买卖推荐。所有基于信号的观察结果均来自公开的开源情报（OSINT）数据。投资有风险，决策需谨慎。",
+    "riskLabel": "风险",
+    "confidenceLabel": "置信度"
+  },
+  "regions": {
+    "world": "全球",
+    "americas": "美洲",
+    "europe": "欧洲",
+    "middleEast": "中东",
+    "asiaPacific": "亚太",
+    "africa": "非洲"
+  },
+  "badges": {
+    "radiation": "辐射水平",
+    "live": "实时",
+    "delayed": "延迟",
+    "items": "条目",
+    "urgent": "紧急",
+    "worldview": "全球视角",
+    "hotMetrics": "核心指标",
+    "stress": "压力系数",
+    "sweeping": "正在扫描...",
+    "europe": "欧洲区域",
+    "orbital": "轨道状态",
+    "osint": "情报",
+    "who": "世卫"
+  },
+  "delta": {
+    "baseline": "基准状态",
+    "escalation": "态势升级 (Escalation)",
+    "deescalation": "态势缓和 (De-escalation)",
+    "stable": "维持稳定",
+    "newSignals": "新增信号",
+    "newBadge": "新增",
+    "resolved": "已消失",
+    "noChanges": "自上次扫描以来无变化",
+    "changes": "处变动",
+    "critical": "严重",
+    "new": "新增"
+  },
+  "metrics": {
+    "wtiCrude": "WTI 原油",
+    "brent": "布伦特原油",
+    "natGas": "天然气",
+    "vix": "VIX 恐慌指数",
+    "fedFunds": "联邦基金利率",
+    "gscpi": "供应链压力指数",
+    "cpiMom": "CPI 月增率",
+    "unemployment": "失业率",
+    "hySpread": "高收益债利差",
+    "usdIndex": "美元指数",
+    "joblessClaims": "初请失业金人数",
+    "mortgage30y": "30年房贷利率",
+    "m2Supply": "M2 货币供应",
+    "natDebt": "美国国债总额",
+    "wti5day": "WTI 五日趋势",
+    "indexes": "主要指数",
+    "crypto": "加密货币",
+    "energyMacro": "能源与宏观",
+    "vsPrior": "较上期",
+    "ecbRate": "欧央行利率",
+    "eurusd": "欧元/美元",
+    "euM3": "欧洲 M3 供应",
+    "euHicp": "欧洲 HICP",
+    "earthquakes7d": "地震 (7d)",
+    "criticalCves": "严重漏洞 (CVE)",
+    "spaceObjects": "轨道物体",
+    "starlink": "星链卫星",
+    "europeAlerts": "欧洲预警",
+    "today": "今日",
+    "comexProxy": "COMEX 代理",
+    "volatilityIndex": "波动率指数"
+  },
+  "signalMetrics": {
+    "incidentTempo": "事件频率",
+    "airTheaters": "空域活动区",
+    "thermalSpikes": "异常热点",
+    "sdrNodes": "SDR 节点",
+    "chokepoints": "关键枢纽",
+    "whoAlerts": "WHO 通报"
+  },
+  "nuclear": {
+    "allSitesNormal": "所有设施运行正常",
+    "anomalyDetected": "检测到辐射异常",
+    "noData": "暂无数据"
+  },
+  "seismic": {
+    "noRecentQuakes": "暂无显著地震活动",
+    "majorQuake": "监测到重大地震",
+    "tsunamiRisk": "海啸风险预控",
+    "mag": "震级"
+  },
+  "cyber": {
+    "noAlerts": "暂无严重安全漏洞",
+    "criticalAlert": "检测到高危安全漏洞",
+    "cvss": "CVSS 评分",
+    "critical": "严重"
+  },
+  "space": {
+    "noActivity": "轨道活动正常",
+    "launchDetected": "监测到发射活动",
+    "objectsTracked": "个追踪物体",
+    "newLast30d": "新增 (30天)",
+    "satellites": "卫星",
+    "recentLaunches": "近期发射",
+    "totalTracked": "追踪总数",
+    "byCountry": "按国别划分",
+    "constellations": "星链/星群",
+    "launches": "次发射"
+  },
+  "europe": {
+    "noAlerts": "暂无活跃预警",
+    "activeAlerts": "活跃预警",
+    "fires": "火灾",
+    "floods": "洪涝",
+    "types": "预警类型"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "hoursAgo": "{hours} 小时前",
+    "daysAgo": "{days} 天前"
+  },
+  "bot": {
+    "commands": {
+      "status": "获取系统运行状况、上次扫描时间、数据源状态",
+      "sweep": "手动触发系统扫描",
+      "brief": "获取当前情报的极简摘要",
+      "portfolio": "显示当前持仓与盈亏 (需连接 Alpaca)",
+      "alerts": "显示近期预警记录",
+      "mute": "静音预警 1 小时 (或 /mute 2h)",
+      "unmute": "恢复预警推送",
+      "help": "查看可用命令列表"
+    },
+    "messages": {
+      "alertsMuted": "🔇 预警已静音 {hours} 小时 — 直至 {time} UTC",
+      "useUnmute": "使用 /unmute 即可恢复推送。",
+      "alertsResumed": "🔔 预警推送已恢复。系统将持续监控。提示：您也可以点击导航栏的信号详情以获取更多信息。",
+      "sweepTriggered": "🚀 手动扫描已启动。若发现显著信号，系统将立即预警。",
+      "sweepInProgress": "🔄 扫描正在进行中，请稍候。",
+      "noDataYet": "⏳ 暂无数据 — 正在等待首次扫描完成。",
+      "noRecentAlerts": "暂无近期预警记录。",
+      "recentAlerts": "📋 近期预警 (最新 {count} 条)",
+      "commandsTip": "提示：命令不区分大小写",
+      "commandFailed": "❌ 命令执行失败: {error}",
+      "portfolioNotAvailable": "📊 投资组合结算需要连接 Alpaca。请在控制面板下方的仪表盘执行该操作。"
+    },
+    "status": {
+      "title": "🖥️ CRUCIX 系统状态",
+      "uptime": "运行时间",
+      "lastSweep": "上次扫描",
+      "nextSweep": "下次扫描",
+      "sweepInProgress": "正在扫描中",
+      "yes": "🔄 是",
+      "no": "⏸️ 否",
+      "sources": "数据源",
+      "failed": "失败",
+      "llm": "AI 引擎",
+      "enabled": "✅ 已开启",
+      "disabled": "❌ 已禁用",
+      "sseClients": "在线客户端",
+      "dashboard": "控制面板",
+      "pending": "等待中",
+      "never": "从无"
+    },
+    "brief": {
+      "title": "📋 CRUCIX 情报简报",
+      "direction": "偏好方向",
+      "changes": "项变动",
+      "criticalChanges": "严重变动",
+      "osint": "📡 实时情报",
+      "urgentSignals": "条紧急信号",
+      "totalPosts": "条总帖数",
+      "topIdeas": "💡 核心建议"
+    },
+    "alertTiers": {
+      "flash": "FLASH (紧急)",
+      "priority": "PRIORITY (高优)",
+      "routine": "ROUTINE (常规)"
+    }
+  },
+  "alerts": {
+    "tiers": {
+      "flash": {
+        "label": "FLASH",
+        "description": "立即采取行动 — 市场剧震，关键时窗"
+      },
+      "priority": {
+        "label": "PRIORITY",
+        "description": "重要信号簇 — 数小时内决策"
+      },
+      "routine": {
+        "label": "ROUTINE",
+        "description": "值得注意的变化 — 参考信息"
+      }
+    },
+    "confidence": {
+      "high": "高",
+      "medium": "中",
+      "low": "低"
+    },
+    "fields": {
+      "direction": "变动方向",
+      "confidence": "置信度",
+      "crossCorrelation": "跨源互证",
+      "action": "建议行动",
+      "signals": "触发信号",
+      "monitor": "持续监测"
+    },
+    "messages": {
+      "alertsMuted": "预警已静音",
+      "mutedUntil": "预警将静音 {hours} 小时 — 直至 {time} UTC。",
+      "useUnmuteToResume": "使用 /unmute 恢复。",
+      "alertsResumed": "预警已恢复",
+      "willReceiveNext": "您将收到下一次信号评估。"
+    },
+    "ruleBasedHeadlines": {
+      "nuclearAnomaly": "监测到核 activity 异常",
+      "crossDomainSignals": "{count} 条关键跨域信号",
+      "escalatingSignals": "{count} 条态势升级信号",
+      "osintSurge": "开源情报激增: {count} 条新增紧急快讯",
+      "signalChangeDetected": "检测到信号变动"
+    }
+  },
+  "llm": {
+    "systemPrompt": "你是一家宏观情报公司的量化分析师。你接收来自 25 个开源情报及经济数据源的结构化数据，并产出 5-8 条可操作的交易建议。\n\n规则：\n- 每条建议必须引用输入中的具体数据点\n- 包含入场逻辑、风险因素和时间周期\n- 结合地缘政治、经济和市场信号 — 进行跨领域关联分析\n- 需具体化：指明具体的交易工具（代码、期货、ETF），不要使用模糊的行业分类\n- 如果增量数据显示重大变化，请优先列出\n- 除非情况发生实质性改变，否则不要重复“过往建议”列表中的内容\n- 评定可信度：HIGH（多个验证信号）、MEDIUM（逻辑自洽）、LOW（具有投机性）\n\n仅输出有效的 JSON 数组。每个对象格式如下：\n{\n  \"title\": \"简短标题 (不超过 10 个词)\",\n  \"type\": \"LONG|SHORT|HEDGE|WATCH|AVOID\",\n  \"ticker\": \"主要交易标的\",\n  \"confidence\": \"HIGH|MEDIUM|LOW\",\n  \"rationale\": \"2-3 句话的论证，引用具体数据\",\n  \"risk\": \"核心风险因素\",\n  \"horizon\": \"日内|数日|数周|数月\",\n  \"signals\": [\"信号1\", \"信号2\"]\n}",
+    "evaluationPrompt": "你是 Crucix，个人 OSINT 监控系统的精英情报预警评估员。你负责分析来自 25 个情报源的信号增量，并决定是否需要通过 Telegram 向用户发送预警。\n\n## 决策框架\n\n你必须将每次评估归类为以下四种结果之一：\n\n### NO ALERT（无需预警）—— 在以下情况下合并/抑制：\n- 常规计划数据（如 NFP、CPI、FOMC 会议纪要等在预期日期发布的数据），除非偏离共识极度严重（>2σ）\n- 在之前的扫描中已经标记过的现有趋势的延续\n- 来自单一来源且未经证实、可信度低的信号\n- 未经硬数据证实的社交媒体噪音（仅凭 Telegram 讨论是不够的）\n\n### 🔴 FLASH（闪电级）—— 立即采取行动，涉及投资 portfolio 风险：\n- 核大国或涉及北约国家之间的活跃军事升级\n- 闪崩指标（VIX 飙升 >40%，主要指数盘中下跌 >3%）\n- 央行紧急行动（非计划内的利率决策、紧急贷款工具）\n- 经多台分析仪确认的核/放射性异常\n- 毫无预警宣布的对主要经济体的制裁\nFLASH 级别需要：来自不同领域（如 OSINT + market data + satellite）的至少 2 个互证来源\n\n### 🟡 PRIORITY（高优级）—— 在数小时内采取行动：\n- 重大市场脱节（VIX >25 且信用利差走阔）\n- 具有明确能源/大宗商品传导渠道的地缘政治升级（冲突 + 原油波动 >3%）\n- 出乎意料的经济数据（主要指标偏差 >1.5σ）\n- 经 ACLED + Telegram 确认的新冲突前线或停火协议崩溃\nPRIORITY 级别需要：至少 2 个信号同向变动，其中至少 1 个来自硬数据\n\n### 🔵 ROUTINE（常规级）—— 仅供参考，无紧迫性：\n- 值得跟踪的显著趋势变化或逆转\n- 具有中等重要性的单一来源信号\n- 累积漂移（在多次扫描中沿同一方向多次小幅波动）\n\n## 输出格式\n\n仅输出有效的 JSON 响应：\n{\n  \"shouldAlert\": true/false,\n  \"tier\": \"FLASH\" | \"PRIORITY\" | \"ROUTINE\",\n  \"headline\": \"不超过 10 个词的简短标题\",\n  \"reason\": \"2-3 句话。发生了什么，为什么重要，下一步观察什么。\",\n  \"actionable\": \"用户可以采取的具体行动（如果仅供参考，则为 'Monitor'）\",\n  \"signals\": [\"信号1\", \"信号2\"],\n  \"confidence\": \"HIGH\" | \"MEDIUM\" | \"LOW\",\n  \"crossCorrelation\": \"哪些领域在互证（例如: '冲突 + 能源 + 卫星'）\"\n}"
+  },
+  "api": {
+    "errors": {
+      "noDataYet": "暂无数据 — 首次扫描进行中"
+    }
+  },
+  "glossary": {
+    "noCallsign": {
+      "term": "无呼号",
+      "category": "空中",
+      "meaning": "OpenSky 接收到的飞机轨迹记录中没有可用的呼号或航班 ID。",
+      "matters": "可作为不透明度信号。集中出现的无呼号轨迹可能表示转发器元数据不完整或交通透明度较低。",
+      "notMeaning": "本身并非军事、秘密或敌对活动的证据。",
+      "example": "南海：152 架中有 6 架无呼号，表示该区域有 6 条轨迹在数据源中没有呼号。"
+    },
+    "highAltitude": {
+      "term": "高空飞行",
+      "category": "空中",
+      "meaning": "当前 OpenSky 快照中高度超过 12,000 米（约 39,000 英尺）的飞机。",
+      "matters": "将巡航高度的流量与低空的本地或区域活动区分开来。",
+      "notMeaning": "并非危险指标，也不一定异常。民航客机通常在此高度运行。",
+      "example": "高空 2 表示在当前的快照中，该热点区域内只有 2 架被追踪的飞机处于巡航高度以上。"
+    },
+    "topCountries": {
+      "term": "主要来源国",
+      "category": "空中",
+      "meaning": "该热点区域内飞机最常见的登记来源国（OpenSky origin_country）值。",
+      "matters": "有助于了解流经该区域的流量的大致构成。",
+      "notMeaning": "这并不代表当前谁在控制飞机，也不是军事所有权的直接指标。",
+      "example": "中国 (61)、菲律宾 (39)、台湾 (17) 表示这些是该快照中排名靠前的登记来源国。"
+    },
+    "frp": {
+      "term": "火灾辐射功率 (FRP)",
+      "category": "热点",
+      "meaning": "单个 FIRMS 热点的辐射功率强度，单位为兆瓦 (MW)。",
+      "matters": "较高的 FRP 通常意味着该点位存在更热、更大或能量更强的火灾事件。",
+      "notMeaning": "这不代表整个区域的总强度，也不是冲突活动的直接证据。",
+      "example": "苏丹/非洲之角: FRP 92.3 MW 描述的是单个热点，而总数 1,451 描述的是整个区域的探测总数。"
+    },
+    "totalDetections": {
+      "term": "总探测数",
+      "category": "热点",
+      "meaning": "当前扫描周期内，整个 FIRMS 区域分段中的热点探测总数。",
+      "matters": "用于识别异常活跃的火灾簇，特别是与历史基准或夜间活动对比时。",
+      "notMeaning": "这不是你点击的单个地图点的计数，也不一定是冲突计数。",
+      "example": "总数 1,451 表示在本次扫描中，整个苏丹/非洲之角分段共探测到 1,451 个点位。"
+    },
+    "nightDetections": {
+      "term": "夜间探测",
+      "category": "热点",
+      "meaning": "在 FIRMS 区域分段中被标记为发生在夜间的热点探测。",
+      "matters": "夜间热点通常更值得关注，因为它们不太可能是常规的日间农耕或土地清理焚烧。",
+      "notMeaning": "不是直接的交战指标。仍需要结合位置、基准和多源情报进行研判。",
+      "example": "夜间 140 表示在 1,451 个区域探测中，有 140 个是在夜间探测到的。"
+    },
+    "chokepoint": {
+      "term": "地理咽喉",
+      "category": "海事",
+      "meaning": "具有战略意义的海上走廊或通道，贸易和能源流可能在这里被延误、分流或中断。",
+      "matters": "这些节点至关重要，因为这里的中断可能影响全球航运成本、运输时间和商品定价。",
+      "notMeaning": "不代表现在正在发生中断。它是一个战略监测位置。",
+      "example": "曼德海峡或霍尔木兹海峡很重要，因为航运和能源流在这里高度集中。"
+    },
+    "sdrReceiver": {
+      "term": "SDR 接收机",
+      "category": "信号",
+      "meaning": "位于感兴趣区域内或附近的公共软件定义无线电 (SDR) 接收机。",
+      "matters": "密集的接收机覆盖可以提供更强的情报监听能力，用于监控该战区的通信或信号活动。",
+      "notMeaning": "其本身不是恶意发射的证据。它是一个观察和监控层。",
+      "example": "南海 SDR 数量表示该区域内或附近可用的公共 KiwiSDR 接收机数量。"
+    },
+    "cpm": {
+      "term": "每分钟计数 (CPM)",
+      "category": "辐射",
+      "meaning": "辐射监测源的每分钟脉冲计数，此处用于表示该站点的相对辐射水平。",
+      "matters": "用于发现偏离正常范围的异常情况，或对比连续读数的趋势。",
+      "notMeaning": "这本身不是直接的安全结论。解读取决于本地基准和趋势，而非原始数字。",
+      "example": "如果该地点的背景辐射水平一直在这个范围内，那么 33 CPM 的读数可能是正常的。"
+    },
+    "hySpread": {
+      "term": "高收益债利差",
+      "category": "宏观",
+      "meaning": "高收益公司债相对于国债的利差，此处作为来自 FRED 的信用压力代理指标。",
+      "matters": "当利差扩大时，市场通常在定价更多的信用压力和更紧缩的财务状况。",
+      "notMeaning": "本身不是衰退预警。它是众多压力信号中的一个。",
+      "example": "高收益债利差与 VIX 同时上升且股市走弱，是比单一利差上升更强的避险 (Risk-off) 信号。"
+    },
+    "vix": {
+      "term": "VIX 指数",
+      "category": "宏观",
+      "meaning": "芝加哥期权交易所波动率指数，通常被称为“恐慌指数”，衡量市场隐含的波动率预期。",
+      "matters": "较高的 VIX 通常意味着市场预期股市波动加剧，投资者倾向于防御性仓位。",
+      "notMeaning": "不是直接的项目崩盘预测，也不是地缘政治指示器。",
+      "example": "VIX 超过 20 且信用利差走阔，是比单一 VIX 上升更严重的市场压力特征。"
+    },
+    "gscpi": {
+      "term": "全球供应链压力指数",
+      "category": "宏观",
+      "meaning": "衡量全球供应链紧张程度的综合指标。",
+      "matters": "它有助于将地缘政治或气候干扰转化为对航运、库存和定价压力的预期。",
+      "notMeaning": "不是实时的市场价格，也不是特定公司的供应链评分。",
+      "example": "较高的 GSCPI 使得航线或能源冲击更有可能演变为更广泛的成本压力。"
+    },
+    "whoAlert": {
+      "term": "世卫组织通报",
+      "category": "健康",
+      "meaning": "公共卫生层中显示的世卫组织疾病爆发新闻或相关公告。",
+      "matters": "用于监测可能影响旅游、供应链、人道主义压力或区域运行状况的疫情。",
+      "notMeaning": "不是大流行 (Pandemic)声明，且不一定代表高严重性。",
+      "example": "如果疫情爆发发生在港口密集的区域，且叠加了航运中断信号，则该通报更值得关注。"
+    },
+    "sweepDelta": {
+      "term": "扫描增量",
+      "category": "平台",
+      "meaning": "当前扫描周期与上一个周期之间的差异摘要，包括新增、升级和降级的信号。",
+      "matters": "用于快速识别自上次查看以来发生了什么变化，而无需重新阅读整个仪表盘。",
+      "notMeaning": "不是完整的风险模型。它只是原始信号之上的定向变化层。",
+      "example": "标记为避险 (Risk-off)且包含多项新增/升级条目的增量，意味着最新的扫描结果导致信号恶化。"
+    }
+  }
+}

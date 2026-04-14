@@ -3,8 +3,8 @@
 // Crucix Master Orchestrator — runs all intelligence sources in parallel
 // Outputs structured JSON for Claude to synthesize into actionable briefing
 
-import './utils/env.mjs'; // Load API keys from .env
 import { pathToFileURL } from 'node:url';
+import config from '../crucix.config.mjs';
 
 // === Tier 1: Core OSINT & Geopolitical ===
 import { briefing as gdelt } from './sources/gdelt.mjs';
@@ -47,7 +47,7 @@ import { briefing as yfinance } from './sources/yfinance.mjs';
 import { briefing as cisaKev } from './sources/cisa-kev.mjs';
 import { briefing as cloudflareRadar } from './sources/cloudflare-radar.mjs';
 
-const SOURCE_TIMEOUT_MS = 30_000; // 30s max per individual source
+const SOURCE_TIMEOUT_MS = config.network.timeoutSweep;
 
 export async function runSource(name, fn, ...args) {
   const start = Date.now();

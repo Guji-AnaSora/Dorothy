@@ -56,34 +56,34 @@ if (telegramAlerter.isConfigured) {
     const sourcesOk = currentData?.meta?.sourcesOk || 0;
     const sourcesTotal = currentData?.meta?.sourcesQueried || 0;
     const sourcesFailed = currentData?.meta?.sourcesFailed || 0;
-    const llmStatus = llmProvider?.isConfigured ? `✅ ${llmProvider.name}` : '❌ Disabled';
+    const llmStatus = llmProvider?.isConfigured ? `✅ ${llmProvider.name}` : t('bot.status.disabled');
     const nextSweep = lastSweepTime
       ? new Date(new Date(lastSweepTime).getTime() + config.refreshIntervalMinutes * 60000).toLocaleTimeString()
-      : 'pending';
+      : t('bot.status.pending');
 
     return [
-      `🖥️ *CRUCIX STATUS*`,
+      t('bot.status.title'),
       ``,
-      `Uptime: ${h}h ${m}m`,
-      `Last sweep: ${lastSweepTime ? new Date(lastSweepTime).toLocaleTimeString() + ' UTC' : 'never'}`,
-      `Next sweep: ${nextSweep} UTC`,
-      `Sweep in progress: ${sweepInProgress ? '🔄 Yes' : '⏸️ No'}`,
-      `Sources: ${sourcesOk}/${sourcesTotal} OK${sourcesFailed > 0 ? ` (${sourcesFailed} failed)` : ''}`,
-      `LLM: ${llmStatus}`,
-      `SSE clients: ${sseClients.size}`,
-      `Dashboard: http://localhost:${config.port}`,
+      `${t('bot.status.uptime')}: ${h}h ${m}m`,
+      `${t('bot.status.lastSweep')}: ${lastSweepTime ? new Date(lastSweepTime).toLocaleTimeString() + ' UTC' : t('bot.status.never')}`,
+      `${t('bot.status.nextSweep')}: ${nextSweep} UTC`,
+      `${t('bot.status.sweepInProgress')}: ${sweepInProgress ? t('bot.status.yes') : t('bot.status.no')}`,
+      `${t('bot.status.sources')}: ${sourcesOk}/${sourcesTotal} ${t('boot.ok')}${sourcesFailed > 0 ? ` (${sourcesFailed} ${t('bot.status.failed')})` : ''}`,
+      `${t('bot.status.llm')}: ${llmStatus}`,
+      `${t('bot.status.sseClients')}: ${sseClients.size}`,
+      `${t('bot.status.dashboard')}: http://localhost:${config.port}`,
     ].join('\n');
   });
 
   telegramAlerter.onCommand('/sweep', async () => {
-    if (sweepInProgress) return '🔄 Sweep already in progress. Please wait.';
+    if (sweepInProgress) return t('bot.messages.sweepInProgress');
     // Fire and forget — don't block the bot response
     runSweepCycle().catch(err => console.error('[Crucix] Manual sweep failed:', err.message));
-    return '🚀 Manual sweep triggered. You\'ll receive alerts if anything significant is detected.';
+    return t('bot.messages.sweepTriggered');
   });
 
   telegramAlerter.onCommand('/brief', async () => {
-    if (!currentData) return '⏳ No data yet — waiting for first sweep to complete.';
+    if (!currentData) return t('bot.messages.noDataYet');
 
     const tg = currentData.tg || {};
     const energy = currentData.energy || {};
@@ -92,7 +92,7 @@ if (telegramAlerter.isConfigured) {
     const ideas = (currentData.ideas || []).slice(0, 3);
 
     const sections = [
-      `📋 *CRUCIX BRIEF*`,
+      t('bot.brief.title'),
       `_${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC_`,
       ``,
     ];
@@ -100,7 +100,7 @@ if (telegramAlerter.isConfigured) {
     // Delta direction
     if (delta?.summary) {
       const dirEmoji = { 'risk-off': '📉', 'risk-on': '📈', 'mixed': '↔️' }[delta.summary.direction] || '↔️';
-      sections.push(`${dirEmoji} Direction: *${delta.summary.direction.toUpperCase()}* | ${delta.summary.totalChanges} changes, ${delta.summary.criticalChanges} critical`);
+      sections.push(`${dirEmoji} ${t('bot.brief.direction')}: *${t(`delta.${delta.summary.direction}`).toUpperCase()}* | ${delta.summary.totalChanges} ${t('bot.brief.changes')}, ${delta.summary.criticalChanges} ${t('bot.brief.criticalChanges')}`);
       sections.push('');
     }
 
@@ -116,7 +116,7 @@ if (telegramAlerter.isConfigured) {
 
     // OSINT
     if (tg.urgent?.length > 0) {
-      sections.push(`📡 OSINT: ${tg.urgent.length} urgent signals, ${tg.posts || 0} total posts`);
+      sections.push(`${t('bot.brief.osint')}: ${tg.urgent.length} ${t('bot.brief.urgentSignals')}, ${tg.posts || 0} ${t('bot.brief.totalPosts')}`);
       // Top 2 urgent
       for (const p of tg.urgent.slice(0, 2)) {
         sections.push(`  • ${(p.text || '').substring(0, 80)}`);
@@ -126,7 +126,7 @@ if (telegramAlerter.isConfigured) {
 
     // Top ideas
     if (ideas.length > 0) {
-      sections.push(`💡 *Top Ideas:*`);
+      sections.push(`${t('bot.brief.topIdeas')}:`);
       for (const idea of ideas) {
         sections.push(`  ${idea.type === 'long' ? '📈' : idea.type === 'hedge' ? '🛡️' : '👁️'} ${idea.title}`);
       }
@@ -136,7 +136,7 @@ if (telegramAlerter.isConfigured) {
   });
 
   telegramAlerter.onCommand('/portfolio', async () => {
-    return '📊 Portfolio integration requires Alpaca MCP connection.\nUse the Crucix dashboard or Claude agent for portfolio queries.';
+    return t('bot.messages.portfolioNotAvailable');
   });
 
   // Start polling for bot commands
@@ -155,32 +155,32 @@ if (discordAlerter.isConfigured) {
     const sourcesOk = currentData?.meta?.sourcesOk || 0;
     const sourcesTotal = currentData?.meta?.sourcesQueried || 0;
     const sourcesFailed = currentData?.meta?.sourcesFailed || 0;
-    const llmStatus = llmProvider?.isConfigured ? `✅ ${llmProvider.name}` : '❌ Disabled';
+    const llmStatus = llmProvider?.isConfigured ? `✅ ${llmProvider.name}` : t('bot.status.disabled');
     const nextSweep = lastSweepTime
       ? new Date(new Date(lastSweepTime).getTime() + config.refreshIntervalMinutes * 60000).toLocaleTimeString()
-      : 'pending';
+      : t('bot.status.pending');
 
     return [
-      `**🖥️ CRUCIX STATUS**\n`,
-      `Uptime: ${h}h ${m}m`,
-      `Last sweep: ${lastSweepTime ? new Date(lastSweepTime).toLocaleTimeString() + ' UTC' : 'never'}`,
-      `Next sweep: ${nextSweep} UTC`,
-      `Sweep in progress: ${sweepInProgress ? '🔄 Yes' : '⏸️ No'}`,
-      `Sources: ${sourcesOk}/${sourcesTotal} OK${sourcesFailed > 0 ? ` (${sourcesFailed} failed)` : ''}`,
-      `LLM: ${llmStatus}`,
-      `SSE clients: ${sseClients.size}`,
-      `Dashboard: http://localhost:${config.port}`,
+      `**${t('bot.status.title')}**\n`,
+      `${t('bot.status.uptime')}: ${h}h ${m}m`,
+      `${t('bot.status.lastSweep')}: ${lastSweepTime ? new Date(lastSweepTime).toLocaleTimeString() + ' UTC' : t('bot.status.never')}`,
+      `${t('bot.status.nextSweep')}: ${nextSweep} UTC`,
+      `${t('bot.status.sweepInProgress')}: ${sweepInProgress ? t('bot.status.yes') : t('bot.status.no')}`,
+      `${t('bot.status.sources')}: ${sourcesOk}/${sourcesTotal} ${t('boot.ok')}${sourcesFailed > 0 ? ` (${sourcesFailed} ${t('bot.status.failed')})` : ''}`,
+      `${t('bot.status.llm')}: ${llmStatus}`,
+      `${t('bot.status.sseClients')}: ${sseClients.size}`,
+      `${t('bot.status.dashboard')}: http://localhost:${config.port}`,
     ].join('\n');
   });
 
   discordAlerter.onCommand('sweep', async () => {
-    if (sweepInProgress) return '🔄 Sweep already in progress. Please wait.';
+    if (sweepInProgress) return t('bot.messages.sweepInProgress');
     runSweepCycle().catch(err => console.error('[Crucix] Manual sweep failed:', err.message));
-    return '🚀 Manual sweep triggered. You\'ll receive alerts if anything significant is detected.';
+    return t('bot.messages.sweepTriggered');
   });
 
   discordAlerter.onCommand('brief', async () => {
-    if (!currentData) return '⏳ No data yet — waiting for first sweep to complete.';
+    if (!currentData) return t('bot.messages.noDataYet');
 
     const tg = currentData.tg || {};
     const energy = currentData.energy || {};
@@ -188,11 +188,11 @@ if (discordAlerter.isConfigured) {
     const delta = memory.getLastDelta();
     const ideas = (currentData.ideas || []).slice(0, 3);
 
-    const sections = [`**📋 CRUCIX BRIEF**\n_${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC_\n`];
+    const sections = [`**${t('bot.brief.title')}**\n_${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC_\n`];
 
     if (delta?.summary) {
       const dirEmoji = { 'risk-off': '📉', 'risk-on': '📈', 'mixed': '↔️' }[delta.summary.direction] || '↔️';
-      sections.push(`${dirEmoji} Direction: **${delta.summary.direction.toUpperCase()}** | ${delta.summary.totalChanges} changes, ${delta.summary.criticalChanges} critical\n`);
+      sections.push(`${dirEmoji} ${t('bot.brief.direction')}: **${t(`delta.${delta.summary.direction}`).toUpperCase()}** | ${delta.summary.totalChanges} ${t('bot.brief.changes')}, ${delta.summary.criticalChanges} ${t('bot.brief.criticalChanges')}\n`);
     }
 
     const vix = currentData.fred?.find(f => f.id === 'VIXCLS');
@@ -205,7 +205,7 @@ if (discordAlerter.isConfigured) {
     }
 
     if (tg.urgent?.length > 0) {
-      sections.push(`📡 OSINT: ${tg.urgent.length} urgent signals, ${tg.posts || 0} total posts`);
+      sections.push(`${t('bot.brief.osint')}: ${tg.urgent.length} ${t('bot.brief.urgentSignals')}, ${tg.posts || 0} ${t('bot.brief.totalPosts')}`);
       for (const p of tg.urgent.slice(0, 2)) {
         sections.push(`  • ${(p.text || '').substring(0, 80)}`);
       }
@@ -213,7 +213,7 @@ if (discordAlerter.isConfigured) {
     }
 
     if (ideas.length > 0) {
-      sections.push(`**💡 Top Ideas:**`);
+      sections.push(`**${t('bot.brief.topIdeas')}:**`);
       for (const idea of ideas) {
         sections.push(`  ${idea.type === 'long' ? '📈' : idea.type === 'hedge' ? '🛡️' : '👁️'} ${idea.title}`);
       }
@@ -223,7 +223,7 @@ if (discordAlerter.isConfigured) {
   });
 
   discordAlerter.onCommand('portfolio', async () => {
-    return '📊 Portfolio integration requires Alpaca MCP connection.\nUse the Crucix dashboard or Claude agent for portfolio queries.';
+    return t('bot.messages.portfolioNotAvailable');
   });
 
   // Start the Discord bot (non-blocking — connection happens async)

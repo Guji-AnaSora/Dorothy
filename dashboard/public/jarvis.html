@@ -360,14 +360,14 @@ body.low-perf .ticker-wrap::-webkit-scrollbar-thumb{background:rgba(100,240,200,
   <div class="glossary-panel">
     <div class="glossary-head">
       <div>
-        <div class="glossary-kicker">Signal Guide</div>
-        <div class="glossary-title">What the signals actually mean</div>
-        <div class="glossary-sub">Plain-English interpretation, why it matters, and what you should not infer from it.</div>
+        <div class="glossary-kicker">${t('dashboard.guideKicker', 'Signal Guide')}</div>
+        <div class="glossary-title">${t('dashboard.guideBtn', 'What the signals actually mean')}</div>
+        <div class="glossary-sub">${t('dashboard.guideSubtitle', 'Plain-English interpretation, why it matters, and what you should not infer from it.')}</div>
       </div>
       <button class="glossary-close" onclick="closeGlossary()" aria-label="Close signal guide">&times;</button>
     </div>
     <div class="glossary-body" id="glossaryBody"></div>
-    <div class="glossary-foot">Treat these as interpretation guides, not conclusions. Stronger judgments should come from corroboration across multiple layers, not from a single signal viewed in isolation.</div>
+    <div class="glossary-foot">${t('dashboard.guideFooter', 'Treat these as interpretation guides, not conclusions. Stronger judgments should come from corroboration across multiple layers, not from a single signal viewed in isolation.')}</div>
   </div>
 </div>
 <script>
@@ -581,12 +581,13 @@ function renderRegionControls(){
 function renderTopbar(){
   const mobile = isMobileLayout();
   const ts = new Date(D.meta.timestamp);
-  const d = ts.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
-  const timeStr = ts.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  const lang = (CRUCIX_LANG === 'zh' ? 'zh-CN' : 'en-US');
+  const d = ts.toLocaleDateString(lang,{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+  const timeStr = ts.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit',hour12:true});
   document.getElementById('topbar').innerHTML=`
     <div class="top-left">
       <span class="brand">CRUCIX MONITOR</span>
-      <span class="regime-chip"><span class="blink"></span>WARTIME STAGFLATION RISK</span>
+      <span class="regime-chip"><span class="blink"></span>${t('dashboard.regimeChip','WARTIME STAGFLATION RISK')}</span>
     </div>
     ${mobile ? `<div class="top-center">${getRegionControlsMarkup()}</div>` : ''}
     <div class="top-right">
@@ -1210,34 +1211,34 @@ function plotFlatMarkers(){
     D.air.forEach((a,i)=>{
       const c=airCoords[i];if(!c)return;
       const g=addPt(c.lat,c.lon,4+a.total/40,'rgba(100,240,200,0.7)','rgba(100,240,200,0.3)',
-        ev=>showPopup(ev,a.region,`${a.total} aircraft<br>No callsign: ${a.noCallsign}<br>High alt: ${a.highAlt}`,'Air Activity'),1);
+        ev=>showPopup(ev,a.region,`${a.total} ${t('map.aircraft','aircraft')}<br>${t('glossary.noCallsign.term','No callsign')}: ${a.noCallsign}<br>${t('glossary.highAltitude.term','High alt')}: ${a.highAlt}`,t('layers.airActivity','Air Activity')),1);
       if(g) g.append('text').attr('class','marker-label').attr('x',10).attr('y',3).attr('fill','var(--dim)').attr('font-size','9px').attr('font-family','var(--mono)').text(a.region.replace(' Region','')+' '+a.total);
     });
   }
   // Thermal
   D.thermal.forEach(t=>t.fires.forEach(f=>{
     addPt(f.lat,f.lon,2+Math.min(f.frp/50,5),'rgba(255,95,99,0.6)','rgba(255,95,99,0.2)',
-      ev=>showPopup(ev,'Thermal',`${t.region}<br>FRP: ${f.frp.toFixed(1)} MW`,'FIRMS'),3);
+      ev=>showPopup(ev,t('map.thermalDetection','Thermal'),`${t.region}<br>FRP: ${f.frp.toFixed(1)} MW`,t('layers.thermalSpikes','FIRMS')),3);
   }));
   // Chokepoints
   D.chokepoints.forEach(cp=>{
     const[x,y]=proj([cp.lon,cp.lat]);if(!x||!y)return;
     const g=mg.append('g').attr('transform',`translate(${x},${y})`).style('cursor','pointer').attr('data-priority',1)
-      .on('click',ev=>{ev.stopPropagation();showPopup(ev,cp.label,cp.note,'Maritime')});
+      .on('click',ev=>{ev.stopPropagation();showPopup(ev,cp.label,cp.note,t('layers.maritimeWatch','Maritime'))});
     g.append('rect').attr('x',-4).attr('y',-4).attr('width',8).attr('height',8).attr('fill','rgba(179,136,255,0.7)').attr('stroke','rgba(179,136,255,0.3)').attr('stroke-width',0.5).attr('transform','rotate(45)');
     g.append('text').attr('class','marker-label').attr('x',8).attr('y',3).attr('fill','var(--dim)').attr('font-size','8px').attr('font-family','var(--mono)').text(cp.label);
   });
   // Nuclear
   const nukeCoords=[{lat:47.5,lon:34.6},{lat:51.4,lon:30.1},{lat:28.8,lon:50.9},{lat:39.8,lon:125.8},{lat:37.4,lon:141},{lat:31.0,lon:35.1}];
-  D.nuke.forEach((n,i)=>{const c=nukeCoords[i];if(!c)return;addPt(c.lat,c.lon,4,'rgba(255,224,130,0.7)','rgba(255,224,130,0.3)',ev=>showPopup(ev,n.site,`CPM: ${n.cpm?.toFixed(1)||'--'}`,'Radiation'),2)});
+  D.nuke.forEach((n,i)=>{const c=nukeCoords[i];if(!c)return;addPt(c.lat,c.lon,4,'rgba(255,224,130,0.7)','rgba(255,224,130,0.3)',ev=>showPopup(ev,n.site,`CPM: ${n.cpm?.toFixed(1)||'--'}`,t('layers.nuclearSites','Radiation')),2)});
   // SDR
-  D.sdr.zones.forEach(z=>z.receivers.forEach(r=>{addPt(r.lat,r.lon,2.5,'rgba(68,204,255,0.5)','rgba(68,204,255,0.2)',ev=>showPopup(ev,'SDR',`${r.name}<br>${z.region}`,'KiwiSDR'),3)}));
+  D.sdr.zones.forEach(z=>z.receivers.forEach(r=>{addPt(r.lat,r.lon,2.5,'rgba(68,204,255,0.5)','rgba(68,204,255,0.2)',ev=>showPopup(ev,t('map.sdrReceiver','SDR'),`${r.name}<br>${z.region}`,t('layers.sdrCoverage','KiwiSDR')),3)}));
   // OSINT
   const osintGeo=[{lat:45,lon:41,idx:0},{lat:48,lon:37,idx:1},{lat:48.5,lon:37.5,idx:2},{lat:45,lon:40.2,idx:3},{lat:50.6,lon:36.6,idx:5},{lat:48.5,lon:35,idx:6}];
   osintGeo.forEach(o=>{const p=D.tg.urgent[o.idx];if(!p)return;addPt(o.lat,o.lon,4,'rgba(255,184,76,0.7)','rgba(255,184,76,0.3)',ev=>showPopup(ev,(p.channel||'').toUpperCase(),cleanText(p.text?.substring(0,200)||''),`${p.views||'?'} views`),2)});
   // WHO
   const whoGeo=[{lat:0.3,lon:32.6},{lat:-6.2,lon:106.8},{lat:-4.3,lon:15.3},{lat:35,lon:105},{lat:12.5,lon:105},{lat:35,lon:105},{lat:28,lon:84},{lat:24,lon:45},{lat:30,lon:70},{lat:-0.8,lon:11.6}];
-  D.who.slice(0,10).forEach((w,i)=>{const c=whoGeo[i];if(!c)return;addPt(c.lat,c.lon,3.5,'rgba(105,240,174,0.6)','rgba(105,240,174,0.2)',ev=>showPopup(ev,w.title,w.summary||'','WHO'),2)});
+  D.who.slice(0,10).forEach((w,i)=>{const c=whoGeo[i];if(!c)return;addPt(c.lat,c.lon,3.5,'rgba(105,240,174,0.6)','rgba(105,240,174,0.2)',ev=>showPopup(ev,w.title,w.summary||'',t('layers.healthWatch','WHO')),2)});
   // News
   (D.news||[]).forEach(n=>{addPt(n.lat,n.lon,3,'rgba(129,212,250,0.6)','rgba(129,212,250,0.2)',ev=>showPopup(ev,n.source+' NEWS',cleanText(n.title),n.region),3)});
   // NOAA weather
@@ -1256,7 +1257,7 @@ function plotFlatMarkers(){
     const[x,y]=proj([e.lon,e.lat]);if(!x||!y)return;
     const r=Math.max(4,Math.min(14,2+Math.log2(Math.max(e.fatalities,1))*1.5));
     const g=mg.append('g').attr('transform',`translate(${x},${y})`).style('cursor','pointer').attr('data-priority',1)
-      .on('click',ev=>{ev.stopPropagation();showPopup(ev,e.type||'CONFLICT',`${e.fatalities} fatalities<br>${e.location}, ${e.country}`,'ACLED')});
+      .on('click',ev=>{ev.stopPropagation();showPopup(ev,e.type||t('map.conflict','CONFLICT'),`${e.fatalities} ${t('layers.fatalities','fatalities')}<br>${e.location}, ${e.country}`,t('layers.conflictEvents','ACLED'))});
     g.append('circle').attr('class','conflict-ring marker-circle').attr('r',r).attr('data-base-r',r).attr('fill','none').attr('stroke','rgba(255,120,80,0.7)').attr('stroke-width',1.5);
     g.append('circle').attr('r',r*0.4).attr('fill','rgba(255,120,80,0.3)');
   });
@@ -1373,19 +1374,19 @@ function renderLower(){
   const vixVal = vixLive?.value || vixFred?.value;
   const vixChg = vixLive?.changePct != null ? `${vixLive.changePct>=0?'+':''}${vixLive.changePct}%` : '';
   const fmtMarketPrice = (price) => price != null ? `$${price.toLocaleString(undefined,{maximumFractionDigits:2})}` : '--';
-  const dayMove = (pct) => pct != null ? `${pct>=0?'+':''}${pct}% today` : '';
+  const dayMove = (pct) => pct != null ? `${pct>=0?'+':''}${pct}% ${t('metrics.today','today')}` : '';
 
   const metrics=[
-    {l:'WTI Crude',v:`$${D.energy.wti}`,s:'$/bbl',p:70},
-    {l:'Brent',v:`$${D.energy.brent}`,s:'$/bbl',p:75},
-    {l:'Nat Gas',v:`$${D.energy.natgas||'--'}`,s:'$/MMBtu',p:30},
-    {l:'Gold',v:fmtMarketPrice(metals.gold),s:dayMove(metals.goldChangePct)||'COMEX proxy',p:58},
-    {l:'Silver',v:fmtMarketPrice(metals.silver),s:dayMove(metals.silverChangePct)||'COMEX proxy',p:54},
-    {l:'VIX',v:vixVal?vixVal.toFixed(1):'--',s:vixChg||'volatility index',p:vixVal?Math.min(vixVal*2.5,100):30},
-    {l:'Fed Funds',v:ff?`${ff.value}%`:'--',s:ff?.date||'',p:36},
+    {l:t('metrics.wtiCrude','WTI Crude'),v:`$${D.energy.wti}`,s:'$/bbl',p:70},
+    {l:t('metrics.brent','Brent'),v:`$${D.energy.brent}`,s:'$/bbl',p:75},
+    {l:t('metrics.natGas','Nat Gas'),v:`$${D.energy.natgas||'--'}`,s:'$/MMBtu',p:30},
+    {l:t('metrics.gold','Gold'),v:fmtMarketPrice(metals.gold),s:dayMove(metals.goldChangePct)||t('metrics.comexProxy','COMEX proxy'),p:58},
+    {l:t('metrics.silver','Silver'),v:fmtMarketPrice(metals.silver),s:dayMove(metals.silverChangePct)||t('metrics.comexProxy','COMEX proxy'),p:54},
+    {l:'VIX',v:vixVal?vixVal.toFixed(1):'--',s:vixChg||t('metrics.volatilityIndex','volatility index'),p:vixVal?Math.min(vixVal*2.5,100):30},
+    {l:t('metrics.fedFunds','Fed Funds'),v:ff?`${ff.value}%`:'--',s:ff?.date||'',p:36},
     {l:'GSCPI',v:gscpi?gscpi.value.toFixed(2):'--',s:gscpi?.interpretation||'',p:49},
-    {l:'CPI MoM',v:cpi?`+${cpi.momChangePct?.toFixed(2)}%`:'--',s:cpi?.date||'',p:37},
-    {l:'Unemployment',v:ue?`${ue.value}%`:'--',s:ue?`${ue.momChange>0?'+':''}${ue.momChange} vs prior`:'',p:44},
+    {l:t('metrics.cpiMom','CPI MoM'),v:cpi?`+${cpi.momChangePct?.toFixed(2)}%`:'--',s:cpi?.date||'',p:37},
+    {l:t('metrics.unemployment','Unemployment'),v:ue?`${ue.value}%`:'--',s:ue?`${ue.momChange>0?'+':''}${ue.momChange} ${t('metrics.vsPrior','vs prior')}`:'',p:44},
   ];
 
   // Attach sparklines from FRED recent data
@@ -1440,14 +1441,14 @@ function renderLower(){
       <span class="idea-type ${(idea.type||'').toLowerCase()}">${(idea.type||'').toUpperCase()}</span>
       ${idea.ticker ? `<span class="idea-horizon">${idea.ticker}</span>` : ''}
       ${idea.horizon ? `<span class="idea-horizon">${idea.horizon}</span>` : ''}
-      <span class="idea-conf">${idea.confidence} confidence</span>
+      <span class="idea-conf">${idea.confidence} ${t('ideas.confidenceLabel','confidence')}</span>
       <div class="idea-title">${idea.title}</div>
       <div class="idea-text">${idea.text||idea.rationale||''}</div>
-      ${idea.risk ? `<div class="idea-text" style="color:var(--warn);margin-top:3px">Risk: ${idea.risk}</div>` : ''}
+      ${idea.risk ? `<div class="idea-text" style="color:var(--warn);margin-top:3px">${t('ideas.riskLabel', 'Risk')}: ${idea.risk}</div>` : ''}
     </div>`).join('') : `<div style="padding:20px;text-align:center;color:var(--dim);font-family:var(--mono);font-size:11px">
       <div style="font-size:24px;margin-bottom:8px;opacity:0.3">&#9888;</div>
-      <div>LLM NOT CONFIGURED</div>
-      <div style="font-size:9px;margin-top:6px;opacity:0.6">Set LLM_PROVIDER + credentials in .env to enable AI-powered trade ideas</div>
+      <div>${t('dashboard.llmNotConfigured','LLM NOT CONFIGURED')}</div>
+      <div style="margin-top:4px;color:rgba(255,255,255,0.2)">${t('dashboard.llmHelp','Set LLM_PROVIDER + credentials in .env to enable AI-powered trade ideas')}</div>
     </div>`;
 
 
@@ -1483,7 +1484,7 @@ function renderLower(){
   const ideasPanel = `<div class="g-panel lp-ideas">
       <div class="sec-head"><h3>${t('panels.tradeIdeas','Leverageable Ideas')}</h3>${D.ideasSource==='llm'?'<span class="ideas-src llm">'+t('ideas.aiEnhanced','AI ENHANCED')+'</span>':D.ideasSource==='disabled'?'<span class="ideas-src static">'+t('ideas.llmOff','LLM OFF')+'</span>':'<span class="ideas-src static">'+t('ideas.pending','PENDING')+'</span>'}</div>
       ${ideasHtml}
-      <div class="disclosure">FOR INFORMATIONAL PURPOSES ONLY. This is not financial advice, a recommendation to buy or sell any security, or a solicitation of any kind. All signal-based observations are derived from publicly available OSINT data and should not be relied upon for investment decisions. Consult a licensed financial advisor before making any investment. Past performance does not guarantee future results.</div>
+      <div class="disclosure">${t('ideas.disclosure','FOR INFORMATIONAL PURPOSES ONLY...')}</div>
     </div>`;
   document.getElementById('lowerGrid').innerHTML=`${tickerPanel}${osintPanel}${macroPanel}${ideasPanel}`;
 }
@@ -1492,16 +1493,16 @@ function renderLower(){
 function renderRight(){
   const mobile = isMobileLayout();
   // CROSS-SOURCE SIGNALS — moved from lower grid to right rail
-  const signals=D.tSignals.slice(0,6).map((s,i)=>`<div class="signal-row"><strong>Signal ${i+1}</strong><p>${s}</p></div>`).join('');
+  const signals=D.tSignals.slice(0,6).map((s,i)=>`<div class="signal-row"><strong>${t('panels.signalRow','Signal')} ${i+1}</strong><p>${s}</p></div>`).join('');
 
   // OSINT TICKER — Telegram + WHO as flowing cards
   const signalMetrics=[
-    {l:'Incident Tempo',v:D.tg.urgent.length,p:70},
-    {l:'Air Theaters',v:D.air.length,p:60},
-    {l:'Thermal Spikes',v:D.thermal.reduce((s,t)=>s+t.hc,0),p:80},
-    {l:'SDR Nodes',v:D.sdr.total,p:92},
-    {l:'Chokepoints',v:D.chokepoints.length,p:50},
-    {l:'WHO Alerts',v:D.who.length,p:40}
+    {l:t('signalMetrics.incidentTempo','Incident Tempo'),v:D.tg.urgent.length,p:70},
+    {l:t('signalMetrics.airTheaters','Air Theaters'),v:D.air.length,p:60},
+    {l:t('signalMetrics.thermalSpikes','Thermal Spikes'),v:D.thermal.reduce((s,t)=>s+t.hc,0),p:80},
+    {l:t('signalMetrics.sdrNodes','SDR Nodes'),v:D.sdr.total,p:92},
+    {l:t('signalMetrics.chokepoints','Chokepoints'),v:D.chokepoints.length,p:50},
+    {l:t('signalMetrics.whoAlerts','WHO Alerts'),v:D.who.length,p:40}
   ];
 
   // DELTA PANEL — what changed since last sweep
@@ -1515,7 +1516,7 @@ function renderRight(){
   const newSigs = (delta.signals?.new || []).slice(0,4);
   const deltaRows = [];
   for(const s of newSigs){
-    deltaRows.push(`<div class="delta-row new"><span class="delta-badge new">NEW</span><span class="delta-label">${s.reason||s.label||s.key}</span></div>`);
+    deltaRows.push(`<div class="delta-row new"><span class="delta-badge new">${t('delta.newBadge','NEW')}</span><span class="delta-label">${s.reason||s.label||s.key}</span></div>`);
   }
   for(const s of escalated){
     const sev = s.severity==='critical'?'style="color:var(--warn);font-weight:600"':s.severity==='high'?'style="color:#ffab40"':'';
@@ -1550,13 +1551,19 @@ function renderRight(){
 }
 
 // === HELPERS ===
-function getAge(d){const ms=Date.now()-new Date(d).getTime();const h=Math.floor(ms/3600000);if(h<1)return 'just now';if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago'}
+function getAge(d){
+  const ms=Date.now()-new Date(d).getTime();
+  const h=Math.floor(ms/3600000);
+  if(h<1)return t('time.justNow','just now');
+  if(h<24)return t('time.hoursAgo','{hours}h ago').replace('{hours}',h);
+  return t('time.daysAgo','{days}d ago').replace('{days}',Math.floor(h/24));
+}
 function cleanText(t){return t.replace(/&#39;/g,"'").replace(/&#33;/g,"!").replace(/&amp;/g,"&").replace(/<[^>]+>/g,'')}
 function safeExternalUrl(raw){try{const u=new URL(raw,location.href);return u.protocol==='http:'||u.protocol==='https:'?u.toString():null}catch{return null}}
 
 // === BOOT SEQUENCE ===
 function runBoot(){
-  const acledStatus = D.acled?.totalEvents > 0 ? `<span class="ok">${D.acled.totalEvents} EVENTS</span>` : '<span style="color:var(--warn)">DEGRADED</span>';
+  const acledStatus = D.acled?.totalEvents > 0 ? `<span class="ok">${D.acled.totalEvents} ${t('boot.events','EVENTS')}</span>` : `<span style="color:var(--warn)">${t('boot.degraded','DEGRADED')}</span>`;
   const lines=[
     {text:t('boot.initializing','INITIALIZING CRUCIX ENGINE v2.1.0'),delay:0},
     {text:t('boot.connecting','CONNECTING {count} OSINT SOURCES...').replace('{count}',D.meta.sourcesQueried),delay:400},
@@ -1604,15 +1611,15 @@ function isMobileLayout(){ return window.innerWidth <= 1100; }
 
 function buildOsintPanel(panelClass='', maxHeight=260){
   const allPosts=[...D.tg.urgent,...D.tg.topPosts].sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
-  const whoItems=D.who.slice(0,4).map(w=>({channel:'WHO ALERT',text:w.title,date:w.date,isWho:true}));
-  const osintItems=[...allPosts.slice(0,15),...whoItems];
-  const osintCards=osintItems.map(p=>{
-    const isU=p.urgentFlags&&p.urgentFlags.length>0;
-    const views=p.views?p.views>=1000?`${(p.views/1000).toFixed(0)}K`:p.views:'';
-    const age=p.date?getAge(p.date):'';
-    const flags=(p.urgentFlags||[]).map(f=>`<span class="tk-src tg" style="margin-right:2px">${f}</span>`).join('');
-    const srcCls=p.isWho?'style="color:#69f0ae;border-color:rgba(105,240,174,0.4)"':'class="tk-src tg"';
-    return `<div class="tk-card ${isU?'urgent':''}"><span ${srcCls}>${(p.channel||'OSINT').toUpperCase().substring(0,14)}</span>${views?`<span class="tk-src other">${views}</span>`:''}<span class="tk-time">${age}</span>${flags}<div class="tk-head">${cleanText((p.text||'').substring(0,160))}</div></div>`;
+    const whoItems=D.who.slice(0,4).map(w=>({channel:t('badges.who','WHO ALERT'),text:w.title,date:w.date,isWho:true}));
+    const osintItems=[...allPosts.slice(0,15),...whoItems];
+    const osintCards=osintItems.map(p=>{
+      const isU=p.urgentFlags&&p.urgentFlags.length>0;
+      const views=p.views?p.views>=1000?`${(p.views/1000).toFixed(0)}K`:p.views:'';
+      const age=p.date?getAge(p.date):'';
+      const flags=(p.urgentFlags||[]).map(f=>`<span class="tk-src tg" style="margin-right:2px">${f}</span>`).join('');
+      const srcCls=p.isWho?'style="color:#69f0ae;border-color:rgba(105,240,174,0.4)"':'class="tk-src tg"';
+      return `<div class="tk-card ${isU?'urgent':''}"><span ${srcCls}>${(p.channel||t('badges.osint','OSINT')).toUpperCase().substring(0,14)}</span>${views?`<span class="tk-src other">${views}</span>`:''}<span class="tk-time">${age}</span>${flags}<div class="tk-head">${cleanText((p.text||'').substring(0,160))}</div></div>`;
   }).join('');
   const osintDuration=Math.max(25,osintItems.length*3);
   return `<div class="g-panel ${panelClass}" style="display:flex;flex-direction:column">
@@ -1626,16 +1633,17 @@ function buildOsintPanel(panelClass='', maxHeight=260){
 function renderGlossary(){
   const body = document.getElementById('glossaryBody');
   if(!body) return;
-  body.innerHTML = signalGuideItems.map(item => `
+  const items = Object.values(L.glossary || {});
+  body.innerHTML = items.map(item => `
     <div class="glossary-card">
       <div class="glossary-term">
         <strong>${item.term}</strong>
         <span class="glossary-tag">${item.category}</span>
       </div>
-      <div class="glossary-line"><span class="glossary-label">Meaning</span>${item.meaning}</div>
-      <div class="glossary-line"><span class="glossary-label">Why it matters</span>${item.matters}</div>
-      <div class="glossary-line"><span class="glossary-label">Not proof of</span>${item.notMeaning}</div>
-      <div class="glossary-line"><span class="glossary-label">Example</span>${item.example}</div>
+      <div class="glossary-line"><span class="glossary-label">${t('map.meaning', 'Meaning')}</span>${item.meaning}</div>
+      <div class="glossary-line"><span class="glossary-label">${t('map.matters', 'Why it matters')}</span>${item.matters}</div>
+      <div class="glossary-line"><span class="glossary-label">${t('map.notMeaning', 'Not proof of')}</span>${item.notMeaning}</div>
+      <div class="glossary-line"><span class="glossary-label">${t('map.example', 'Example')}</span>${item.example}</div>
     </div>
   `).join('');
 }
@@ -1723,7 +1731,7 @@ function connectSSE(){
         }
       } else if (msg.type === 'sweep_start') {
         const badge = document.querySelector('.alert-badge');
-        if (badge) { badge.textContent = 'SWEEPING...'; badge.style.borderColor = 'var(--accent)'; }
+        if (badge) { badge.textContent = t('badges.sweeping','SWEEPING...'); badge.style.borderColor = 'var(--accent)'; }
       }
     } catch {}
   };

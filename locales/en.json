@@ -23,7 +23,16 @@
     "perf": "PERF",
     "perfLow": "LOW",
     "perfHigh": "HIGH",
-    "guideBtn": "What Signals Mean"
+    "guideBtn": "What Signals Mean",
+    "guideKicker": "Signal Guide",
+    "guideSubtitle": "Plain-English interpretation, why it matters, and what you should not infer from it.",
+    "guideFooter": "Treat these as interpretation guides, not conclusions. Stronger judgments should come from corroboration across multiple layers, not from a single signal viewed in isolation.",
+    "regimeChip": "WARTIME STAGFLATION RISK",
+    "visuals": "VISUALS",
+    "visualsLite": "LITE",
+    "visualsFull": "FULL",
+    "llmNotConfigured": "LLM NOT CONFIGURED",
+    "llmHelp": "Set LLM_PROVIDER + credentials in .env to enable AI-powered trade ideas"
   },
   "boot": {
     "initializing": "INITIALIZING CRUCIX ENGINE v2.1.0",
@@ -61,7 +70,8 @@
     "cyberWatch": "Cyber Watch",
     "spaceWatch": "Space Watch",
     "europeAlerts": "Europe Alerts",
-    "ecbIndicators": "ECB Indicators"
+    "ecbIndicators": "ECB Indicators",
+    "signalRow": "Signal"
   },
   "layers": {
     "airActivity": "Air Activity",
@@ -108,7 +118,12 @@
     "weatherAlert": "Weather Alert",
     "epaRadNet": "EPA RadNet",
     "spaceStation": "Space Station",
-    "gdeltEvent": "GDELT Event"
+    "gdeltEvent": "GDELT Event",
+    "meaning": "Meaning",
+    "matters": "Why it matters",
+    "notMeaning": "What it DOES NOT mean",
+    "example": "Example",
+    "close": "CLOSE"
   },
   "ideas": {
     "confidence": "Confidence",
@@ -121,7 +136,9 @@
     "pending": "PENDING",
     "llmNotConfigured": "LLM NOT CONFIGURED",
     "llmHelp": "Set LLM_PROVIDER + credentials in .env to enable AI-powered trade ideas",
-    "disclosure": "FOR INFORMATIONAL PURPOSES ONLY. This is not financial advice, a recommendation to buy or sell any security, or a solicitation of any kind. All signal-based observations are derived from publicly available OSINT data and should not be relied upon for investment decisions. Consult a licensed financial advisor before making any investment. Past performance does not guarantee future results."
+    "disclosure": "FOR INFORMATIONAL PURPOSES ONLY. This is not financial advice, a recommendation to buy or sell any security, or a solicitation of any kind. All signal-based observations are derived from publicly available OSINT data and should not be relied upon for investment decisions. Consult a licensed financial advisor before making any investment. Past performance does not guarantee future results.",
+    "riskLabel": "Risk",
+    "confidenceLabel": "confidence"
   },
   "regions": {
     "world": "World",
@@ -142,7 +159,9 @@
     "stress": "STRESS",
     "sweeping": "SWEEPING...",
     "europe": "EUROPE",
-    "orbital": "ORBITAL"
+    "orbital": "ORBITAL",
+    "osint": "OSINT",
+    "who": "WHO"
   },
   "delta": {
     "baseline": "BASELINE",
@@ -150,6 +169,7 @@
     "deescalation": "DE-ESCALATION",
     "stable": "STABLE",
     "newSignals": "New Signals",
+    "newBadge": "NEW",
     "resolved": "Resolved",
     "noChanges": "No changes since last sweep",
     "changes": "Changes",
@@ -184,7 +204,10 @@
     "criticalCves": "Critical CVEs",
     "spaceObjects": "Space Objects",
     "starlink": "Starlink",
-    "europeAlerts": "EU Alerts"
+    "europeAlerts": "EU Alerts",
+    "today": "today",
+    "comexProxy": "COMEX proxy",
+    "volatilityIndex": "volatility index"
   },
   "signalMetrics": {
     "incidentTempo": "Incident Tempo",
@@ -349,11 +372,126 @@
     }
   },
   "llm": {
-    "systemPrompt": "You are a quantitative analyst at a macro intelligence firm. You receive structured OSINT + economic data from 25 sources and produce 5-8 actionable trade ideas.\n\nRules:\n- Each idea must cite specific data points from the input\n- Include entry rationale, risk factors, and time horizon\n- Blend geopolitical, economic, and market signals — cross-correlate across domains\n- Be specific: name instruments (tickers, futures, ETFs), not vague sectors\n- If delta shows significant changes, lead with those\n- Do NOT repeat ideas from the \"previous ideas\" list unless conditions have materially changed\n- Rate confidence: HIGH (multiple confirming signals), MEDIUM (thesis supported), LOW (speculative)\n\nOutput ONLY valid JSON array. Each object:\n{\n  \"title\": \"Short title (max 10 words)\",\n  \"type\": \"LONG|SHORT|HEDGE|WATCH|AVOID\",\n  \"ticker\": \"Primary instrument\",\n  \"confidence\": \"HIGH|MEDIUM|LOW\",\n  \"rationale\": \"2-3 sentence explanation citing specific data\",\n  \"risk\": \"Key risk factor\",\n  \"horizon\": \"Intraday|Days|Weeks|Months\",\n  \"signals\": [\"signal1\", \"signal2\"]\n}"
+    "systemPrompt": "You are a quantitative analyst at a macro intelligence firm. You receive structured OSINT + economic data from 25 sources and produce 5-8 actionable trade ideas.\n\nRules:\n- Each idea must cite specific data points from the input\n- Include entry rationale, risk factors, and time horizon\n- Blend geopolitical, economic, and market signals — cross-correlate across domains\n- Be specific: name instruments (tickers, futures, ETFs), not vague sectors\n- If delta shows significant changes, lead with those\n- Do NOT repeat ideas from the \"previous ideas\" list unless conditions have materially changed\n- Rate confidence: HIGH (multiple confirming signals), MEDIUM (thesis supported), LOW (speculative)\n\nOutput ONLY valid JSON array. Each object:\n{\n  \"title\": \"Short title (max 10 words)\",\n  \"type\": \"LONG|SHORT|HEDGE|WATCH|AVOID\",\n  \"ticker\": \"Primary instrument\",\n  \"confidence\": \"HIGH|MEDIUM|LOW\",\n  \"rationale\": \"2-3 sentence explanation citing specific data\",\n  \"risk\": \"Key risk factor\",\n  \"horizon\": \"Intraday|Days|Weeks|Months\",\n  \"signals\": [\"signal1\", \"signal2\"]\n}",
+    "evaluationPrompt": "You are Crucix, an elite intelligence alert evaluator for a personal OSINT monitoring system. You analyze signal deltas from a 25-source intelligence sweep and decide if the user needs to be alerted via Telegram.\n\n## Your Decision Framework\n\nYou must classify each evaluation into one of four outcomes:\n\n### NO ALERT — suppress if:\n- Routine scheduled data (NFP, CPI, FOMC minutes on expected dates) UNLESS the deviation from consensus is extreme (>2σ)\n- Continuation of existing trends already flagged in prior sweeps\n- Low-confidence signals from single sources without corroboration\n- Social media noise without hard-data confirmation (Telegram chatter alone is NOT enough)\n\n### 🔴 FLASH — immediate, life-of-portfolio risk:\n- Active military escalation between nuclear powers or NATO-involved states\n- Flash crash indicators (VIX spike >40%, major index down >3% intraday)\n- Central bank emergency action (unscheduled rate decision, emergency lending facility)\n- Nuclear/radiological anomaly confirmed by multiple monitors\n- Sanctions against major economy announced without warning\nFLASH requires: ≥2 corroborating sources across different domains (e.g. OSINT + market data + satellite)\n\n### 🟡 PRIORITY — act within hours:\n- Significant market dislocation (VIX >25 AND credit spreads widening)\n- Geopolitical escalation with clear energy/commodity transmission (conflict + oil move >3%)\n- Unexpected economic data (>1.5σ miss on major indicator)\n- New conflict front or ceasefire collapse confirmed by ACLED + Telegram\nPRIORITY requires: ≥2 signals moving in same direction, at least 1 from hard data\n\n### 🔵 ROUTINE — informational, no urgency:\n- Notable trend shifts or reversals worth tracking\n- Single-source signals of moderate importance\n- Cumulative drift (multiple small moves in same direction over several sweeps)\n\n## Output Format\n\nRespond with ONLY valid JSON:\n{\n  \"shouldAlert\": true/false,\n  \"tier\": \"FLASH\" | \"PRIORITY\" | \"ROUTINE\",\n  \"headline\": \"10-word max headline\",\n  \"reason\": \"2-3 sentences. What happened, why it matters, what to watch next.\",\n  \"actionable\": \"Specific action the user could take (or 'Monitor' if just informational)\",\n  \"signals\": [\"signal1\", \"signal2\"],\n  \"confidence\": \"HIGH\" | \"MEDIUM\" | \"LOW\",\n  \"crossCorrelation\": \"Which domains are confirming each other (e.g. 'conflict + energy + satellite')\"\n}"
   },
   "api": {
     "errors": {
       "noDataYet": "No data yet — first sweep in progress"
+    }
+  },
+  "glossary": {
+    "noCallsign": {
+      "term": "No Callsign",
+      "category": "Air",
+      "meaning": "The aircraft track received from OpenSky does not have a callsign or flight ID available.",
+      "matters": "Acts as an opacity signal. Clusters of no-callsign tracks can indicate incomplete transponder metadata or lower traffic transparency.",
+      "notMeaning": "Not evidence of military, covert, or hostile activity by itself.",
+      "example": "South China Sea: 6 of 152 have NO CALLSIGN, meaning 6 tracks in the data feed lack a callsign."
+    },
+    "highAltitude": {
+      "term": "High Altitude",
+      "category": "Air",
+      "meaning": "Aircraft currently in the OpenSky snapshot above 12,000 meters (~39,000 feet).",
+      "matters": "Distinguishes traffic at cruise altitude from local or regional activity at lower levels.",
+      "notMeaning": "Not a danger indicator and not necessarily unusual. Commercial jets commonly fly at these levels.",
+      "example": "Hi-Alt 2 means only 2 tracked aircraft in that hotspot are above cruise level in the current snapshot."
+    },
+    "topCountries": {
+      "term": "Top Origin Countries",
+      "category": "Air",
+      "meaning": "The most common countries of registration (OpenSky origin_country) for aircraft in the hotspot.",
+      "matters": "Provides a high-level view of the composition of traffic passing through the area.",
+      "notMeaning": "This does not define who is currently in control of the aircraft, nor is it a direct indicator of military ownership.",
+      "example": "China (61), Philippines (39), Taiwan (17) indicates these are the top registration origins in this snapshot."
+    },
+    "frp": {
+      "term": "Fire Radiative Power (FRP)",
+      "category": "Thermal",
+      "meaning": "The radiative power intensity of a single FIRMS hotspot, measured in Megawatts (MW).",
+      "matters": "Higher FRP generally implies a hotter, larger, or more energy-intense fire event at that point.",
+      "notMeaning": "Does not represent the total intensity for the whole area, and is not direct evidence of conflict activity.",
+      "example": "Sudan/Horn of Africa: FRP 92.3 MW describes one single point, while Total 1,451 describes the whole sweep."
+    },
+    "totalDetections": {
+      "term": "Total Detections",
+      "category": "Thermal",
+      "meaning": "The total number of hotspot detections across the entire FIRMS region segment in the current sweep.",
+      "matters": "Identifies unusually active fire clusters when compared to historical baselines or night activity.",
+      "notMeaning": "This is not the count for a single map point you clicked, and not necessarily a conflict count.",
+      "example": "Total 1,451 means 1,451 points were detected across the entire Sudan/Horn of Africa segment in this sweep."
+    },
+    "nightDetections": {
+      "term": "Night Detections",
+      "category": "Thermal",
+      "meaning": "Hotspot detections in the FIRMS region segment that were flagged as occurring at night.",
+      "matters": "Nighttime hotspots are often more noteworthy as they are less likely to be routine daytime agriculture or land clearing burns.",
+      "notMeaning": "Not a direct combat indicator. Requires context of location, baseline, and multi-source intel.",
+      "example": "Night 140 means 140 of the 1,451 regional detections occurred at night."
+    },
+    "chokepoint": {
+      "term": "Geographic Chokepoint",
+      "category": "Maritime",
+      "meaning": "Strategically significant maritime corridor or passage where trade and energy flows can be delayed, diverted, or disrupted.",
+      "matters": "Critical nodes because a disruption here can impact global shipping costs, transit times, and commodity pricing.",
+      "notMeaning": "Does not mean a disruption is happening now. It is a strategic monitor location.",
+      "example": "Bab-el-Mandeb or Strait of Hormuz are significant because shipping and energy flows are highly concentrated there."
+    },
+    "sdrReceiver": {
+      "term": "SDR Receiver",
+      "category": "Signals",
+      "meaning": "A public Software Defined Radio (SDR) receiver located in or near the area of interest.",
+      "matters": "Dense receiver coverage can provide stronger intelligence gathering for monitoring radio traffic or signals in the theater.",
+      "notMeaning": "By itself, not evidence of malicious transmission. It is an observation and monitoring layer.",
+      "example": "South China Sea SDR count indicates the number of public KiwiSDR receivers available in or near the region."
+    },
+    "cpm": {
+      "term": "Counts Per Minute (CPM)",
+      "category": "Radiation",
+      "meaning": "Pulses per minute from a radiation monitor source, used here for relative radiation levels at the site.",
+      "matters": "Used to spot anomalies that deviate from a normal range or to contrast trends in successive readings.",
+      "notMeaning": "Not a direct safety conclusion by itself. Interpretation depends on local baselines and trends, not raw numbers.",
+      "example": "A reading of 33 CPM might be normal if the background level for that location has been consistently in that range."
+    },
+    "hySpread": {
+      "term": "High Yield Spread",
+      "category": "Macro",
+      "meaning": "The yield difference between high-yield corporate bonds and treasuries, used here as a credit stress proxy from FRED.",
+      "matters": "When spreads widen, it usually indicates the market is pricing in more credit stress and tighter financial conditions.",
+      "notMeaning": "Not a recession predictor by itself. It is one of many indicators of stress.",
+      "example": "HY Spreads rising while VIX also spikes and equities weaken is a stronger risk-off signal than a lone spread move."
+    },
+    "vix": {
+      "term": "VIX Index",
+      "category": "Macro",
+      "meaning": "The CBOE Volatility Index, often called the 'fear gauge', measuring market expectations for implied volatility.",
+      "matters": "Higher VIX usually means markets expect increased equity volatility, indicating defensive positioning by investors.",
+      "notMeaning": "Not a direct prediction of project collapse, nor a geopolitical indicator.",
+      "example": "VIX above 20 combined with widening credit spreads characterizes a more severe market stress profile than VIX alone."
+    },
+    "gscpi": {
+      "term": "Global Supply Chain Pressure Index",
+      "category": "Macro",
+      "meaning": "A composite measure of global supply chain strain.",
+      "matters": "Helps translate geopolitical or climate disruptions into expectations for shipping, inventory, and pricing pressures.",
+      "notMeaning": "Not a real-time market price, nor a specific company supply chain score.",
+      "example": "Elevated GSCPI makes it more likely that a transit or energy shock will translate into broader cost pressures."
+    },
+    "whoAlert": {
+      "term": "WHO Alert",
+      "category": "Health",
+      "meaning": "World Health Organization Disease Outbreak News or related announcements shown in the public health layer.",
+      "matters": "Used to monitor outbreaks that could impact travel, supply chains, humanitarian pressure, or regional operations.",
+      "notMeaning": "Not a pandemic declaration, and not necessarily an indicator of high severity.",
+      "example": "An outbreak alert in a port-dense region combined with shipping disruption signals becomes more significant."
+    },
+    "sweepDelta": {
+      "term": "Sweep Delta",
+      "category": "Platform",
+      "meaning": "Summary of differences between the current sweep cycle and the previous one, including new, escalated, and de-escalated signals.",
+      "matters": "Identifying what changed since you last looked without having to re-read the entire dashboard.",
+      "notMeaning": "Not a complete risk model. It is a layer of directional change on top of raw signals.",
+      "example": "A Delta marked RISK-OFF with several new/escalated entries suggests signal deterioration in the latest sweep."
     }
   }
 }

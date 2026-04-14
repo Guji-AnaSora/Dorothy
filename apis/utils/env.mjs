@@ -3,6 +3,7 @@
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { setGlobalDispatcher, ProxyAgent } from 'undici';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const paths = [
@@ -29,4 +30,16 @@ function loadEnv(filePath) {
 
 for (const p of paths) {
   if (loadEnv(p) >= 0) break;
+}
+
+// Global proxy support for Node.js native fetch (undici)
+const proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
+if (proxy) {
+  try {
+    const dispatcher = new ProxyAgent(proxy);
+    setGlobalDispatcher(dispatcher);
+    console.log(`[Crucix] Global proxy enabled: ${proxy}`);
+  } catch (err) {
+    console.error(`[Crucix] Failed to set global proxy: ${err.message}`);
+  }
 }

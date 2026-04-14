@@ -10,7 +10,8 @@ export default {
     provider: process.env.LLM_PROVIDER || null, // anthropic | openai | gemini | codex | openrouter | minimax | mistral | ollama | grok
     apiKey: process.env.LLM_API_KEY || null,
     model: process.env.LLM_MODEL || null,
-    baseUrl: process.env.OLLAMA_BASE_URL || null,
+    baseUrl: process.env.LLM_BASE_URL || process.env.OLLAMA_BASE_URL || null,
+    timeout: parseInt(process.env.CRUCIX_TIMEOUT_LLM) || 300000,
   },
 
   telegram: {
@@ -18,6 +19,7 @@ export default {
     chatId: process.env.TELEGRAM_CHAT_ID || null,
     botPollingInterval: parseInt(process.env.TELEGRAM_POLL_INTERVAL) || 5000,
     channels: process.env.TELEGRAM_CHANNELS || null, // Comma-separated extra channel IDs
+    timeout: parseInt(process.env.CRUCIX_TIMEOUT_RSS) || 20000,
   },
 
   discord: {
@@ -25,6 +27,13 @@ export default {
     channelId: process.env.DISCORD_CHANNEL_ID || null,
     guildId: process.env.DISCORD_GUILD_ID || null, // Server ID (for instant slash command registration)
     webhookUrl: process.env.DISCORD_WEBHOOK_URL || null, // Fallback: webhook-only alerts (no bot needed)
+  },
+
+  network: {
+    proxy: process.env.HTTPS_PROXY || process.env.HTTP_PROXY || null,
+    timeoutSweep: parseInt(process.env.CRUCIX_TIMEOUT_SWEEP) || 60000,
+    timeoutRss: parseInt(process.env.CRUCIX_TIMEOUT_RSS) || 20000,
+    timeoutLlm: parseInt(process.env.CRUCIX_TIMEOUT_LLM) || 90000,
   },
 
   // Delta engine thresholds — override defaults from lib/delta/engine.mjs
