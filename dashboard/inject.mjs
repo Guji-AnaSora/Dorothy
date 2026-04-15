@@ -148,7 +148,12 @@ function loadOpenSkyFallback(currentTimestamp) {
 // === RSS Fetching ===
 async function fetchRSS(url, source) {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(config.network.timeoutRss) });
+    const res = await fetch(url, { 
+      signal: AbortSignal.timeout(config.network.timeoutRss),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
     const xml = await res.text();
     const items = [];
     const itemRegex = /<item>([\s\S]*?)<\/item>/g;
