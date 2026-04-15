@@ -360,8 +360,16 @@ async function runSweepCycle() {
     // 1. Run the full briefing sweep
     const rawData = await fullBriefing();
 
-    // 2. Save to runs/latest.json
+    // 2. Save to runs/latest.json and timestamped archive
     writeFileSync(join(RUNS_DIR, 'latest.json'), JSON.stringify(rawData, null, 2));
+    // Also save timestamped file for historical reference
+    const timestamp = rawData.crucix.timestamp 
+      ? new Date(rawData.crucix.timestamp) 
+      : new Date();
+    const formattedTs = timestamp.toISOString().replace(/[:]/g, '-').replace(/\.\d{3}Z$/, 'Z');
+    const timestampedFile = join(RUNS_DIR, `briefing_${formattedTs}.json`);
+    writeFileSync(timestampedFile, JSON.stringify(rawData, null, 2));
+    console.log(`[Crucix] Saved timestamped briefing to ${timestampedFile}`);
     lastSweepTime = new Date().toISOString();
 
     // 3. Synthesize into dashboard format
