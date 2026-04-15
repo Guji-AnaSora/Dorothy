@@ -581,7 +581,7 @@ function renderRegionControls(){
 function renderTopbar(){
   const mobile = isMobileLayout();
   const ts = new Date(D.meta.timestamp);
-  const lang = (CRUCIX_LANG === 'zh' ? 'zh-CN' : 'en-US');
+  const lang = ((window.CRUCIX_LANG || 'en') === 'zh' ? 'zh-CN' : 'en-US');
   const d = ts.toLocaleDateString(lang,{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
   const timeStr = ts.toLocaleTimeString(lang,{hour:'2-digit',minute:'2-digit',hour12:true});
   document.getElementById('topbar').innerHTML=`
@@ -1783,6 +1783,10 @@ document.addEventListener('DOMContentLoaded', () => {
   } else if (hasInlineData) {
     // File mode: use inline data
     init();
+    // If served from HTTP (not file://), still need to connect SSE for live updates!
+    if (canProbeApi) {
+      connectSSE();
+    }
   }
 });
 </script>
