@@ -1771,22 +1771,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const hasInlineData = !!(D && D.meta);
   const canProbeApi = location.protocol !== 'file:';
 
-  if (canProbeApi && !hasInlineData) {
-    // Server mode: always fetch live data from API (ignore any stale inline D)
+  if (canProbeApi) {
+    // Always fetch from API first when served over HTTP
+    // This ensures we get the latest cached data from server instead of stale inline data
     fetch('/api/data')
       .then(r => r.json())
-      .then(data => { D = data; init(); connectSSE(); })
+      .then(data => { 
+        D = data; 
+        init(); 
+        connectSSE(); 
+      })
       .catch(() => {
-        // Should not reach here — server routes to loading.html when no data
-        if (D && D.meta) { init(); connectSSE(); }
+        // If API fails (no data yet or error), fall back to inline data if available
+        if (hasInlineData) { 
+          init(); 
+          connectSSE(); 
+        }
       });
   } else if (hasInlineData) {
-    // File mode: use inline data
+    // File mode (file:// protocol): use inline data
     init();
-    // If served from HTTP (not file://), still need to connect SSE for live updates!
-    if (canProbeApi) {
-      connectSSE();
-    }
   }
 });
 </script>
