@@ -35,6 +35,31 @@ let sweepInProgress = false;
 const startTime = Date.now();
 const sseClients = new Set();
 
+// === Timezone helper ===
+function formatLocalTime(date) {
+  const d = new Date(date);
+  if (config.timezone) {
+    return d.toLocaleTimeString(currentLanguage, { timeZone: config.timezone });
+  }
+  return d.toLocaleTimeString();
+}
+
+function formatFullDateTime(date) {
+  const d = new Date(date);
+  if (config.timezone) {
+    return d.toLocaleString(currentLanguage, { 
+      timeZone: config.timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).replace(',', '');
+  }
+  return d.toLocaleString();
+}
+
 // === Delta/Memory ===
 const memory = new MemoryManager(RUNS_DIR);
 
@@ -58,15 +83,16 @@ if (telegramAlerter.isConfigured) {
     const sourcesFailed = currentData?.meta?.sourcesFailed || 0;
     const llmStatus = llmProvider?.isConfigured ? `✅ ${llmProvider.name}` : t('bot.status.disabled');
     const nextSweep = lastSweepTime
-      ? new Date(new Date(lastSweepTime).getTime() + config.refreshIntervalMinutes * 60000).toLocaleTimeString()
+      ? formatLocalTime(new Date(lastSweepTime).getTime() + config.refreshIntervalMinutes * 60000)
       : t('bot.status.pending');
 
+    const timezoneLabel = config.timezone || 'UTC';
     return [
       t('bot.status.title'),
       ``,
       `${t('bot.status.uptime')}: ${h}h ${m}m`,
-      `${t('bot.status.lastSweep')}: ${lastSweepTime ? new Date(lastSweepTime).toLocaleTimeString() + ' UTC' : t('bot.status.never')}`,
-      `${t('bot.status.nextSweep')}: ${nextSweep} UTC`,
+      `${t('bot.status.lastSweep')}: ${lastSweepTime ? formatLocalTime(lastSweepTime) + ' ' + timezoneLabel : t('bot.status.never')}`,
+      `${t('bot.status.nextSweep')}: ${nextSweep} ${timezoneLabel}`,
       `${t('bot.status.sweepInProgress')}: ${sweepInProgress ? t('bot.status.yes') : t('bot.status.no')}`,
       `${t('bot.status.sources')}: ${sourcesOk}/${sourcesTotal} ${t('boot.ok')}${sourcesFailed > 0 ? ` (${sourcesFailed} ${t('bot.status.failed')})` : ''}`,
       `${t('bot.status.llm')}: ${llmStatus}`,
@@ -91,9 +117,16 @@ if (telegramAlerter.isConfigured) {
     const delta = memory.getLastDelta();
     const ideas = (currentData.ideas || []).slice(0, 3);
 
+    const timezoneLabel = config.timezone || 'UTC';
+    let formattedDate;
+    if (config.timezone) {
+      formattedDate = formatFullDateTime(new Date());
+    } else {
+      formattedDate = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    }
     const sections = [
       t('bot.brief.title'),
-      `_${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC_`,
+      `_${formattedDate} ${timezoneLabel}_`,
       ``,
     ];
 
@@ -157,14 +190,15 @@ if (discordAlerter.isConfigured) {
     const sourcesFailed = currentData?.meta?.sourcesFailed || 0;
     const llmStatus = llmProvider?.isConfigured ? `✅ ${llmProvider.name}` : t('bot.status.disabled');
     const nextSweep = lastSweepTime
-      ? new Date(new Date(lastSweepTime).getTime() + config.refreshIntervalMinutes * 60000).toLocaleTimeString()
+      ? formatLocalTime(new Date(lastSweepTime).getTime() + config.refreshIntervalMinutes * 60000)
       : t('bot.status.pending');
 
+    const timezoneLabel = config.timezone || 'UTC';
     return [
       `**${t('bot.status.title')}**\n`,
       `${t('bot.status.uptime')}: ${h}h ${m}m`,
-      `${t('bot.status.lastSweep')}: ${lastSweepTime ? new Date(lastSweepTime).toLocaleTimeString() + ' UTC' : t('bot.status.never')}`,
-      `${t('bot.status.nextSweep')}: ${nextSweep} UTC`,
+      `${t('bot.status.lastSweep')}: ${lastSweepTime ? formatLocalTime(lastSweepTime) + ' ' + timezoneLabel : t('bot.status.never')}`,
+      `${t('bot.status.nextSweep')}: ${nextSweep} ${timezoneLabel}`,
       `${t('bot.status.sweepInProgress')}: ${sweepInProgress ? t('bot.status.yes') : t('bot.status.no')}`,
       `${t('bot.status.sources')}: ${sourcesOk}/${sourcesTotal} ${t('boot.ok')}${sourcesFailed > 0 ? ` (${sourcesFailed} ${t('bot.status.failed')})` : ''}`,
       `${t('bot.status.llm')}: ${llmStatus}`,
@@ -242,11 +276,11 @@ app.get('/', (req, res) => {
     res.sendFile(join(ROOT, 'dashboard/public/loading.html'));
   } else {
     const htmlPath = join(ROOT, 'dashboard/public/jarvis.html');
-    let html = readFileSync(htmlPath, 'utf-8');
+    let html = readFileSync(htmlPath, 'utf8');
     
     // Inject locale data into the HTML
     const locale = getLocale();
-    const localeScript = `<script>window.__CRUCIX_LOCALE__ = ${JSON.stringify(locale).replace(/<\/script>/gi, '<\\/script>')};</script>`;
+    const localeScript = `<script>window.__CRUCIX_LOCALE__ = ${JSON.stringify(locale).replace(/<\/script>/gi, '<\\/script>')}; window.CRUCIX_LANG = '${currentLanguage}';</script>`;
     html = html.replace('</head>', `${localeScript}\n</head>`);
     
     res.type('html').send(html);
@@ -319,7 +353,7 @@ async function runSweepCycle() {
   sweepStartedAt = new Date().toISOString();
   broadcast({ type: 'sweep_start', timestamp: sweepStartedAt });
   console.log(`\n${'='.repeat(60)}`);
-  console.log(`[Crucix] Starting sweep at ${new Date().toLocaleTimeString()}`);
+   console.log(`[Crucix] Starting sweep at ${formatLocalTime(new Date())}`);
   console.log(`${'='.repeat(60)}`);
 
   try {
@@ -387,7 +421,7 @@ async function runSweepCycle() {
     console.log(`[Crucix] Sweep complete — ${currentData.meta.sourcesOk}/${currentData.meta.sourcesQueried} sources OK`);
     console.log(`[Crucix] ${currentData.ideas.length} ideas (${synthesized.ideasSource}) | ${currentData.news.length} news | ${currentData.newsFeed.length} feed items`);
     if (delta?.summary) console.log(`[Crucix] Delta: ${delta.summary.totalChanges} changes, ${delta.summary.criticalChanges} critical, direction: ${delta.summary.direction}`);
-    console.log(`[Crucix] Next sweep at ${new Date(Date.now() + config.refreshIntervalMinutes * 60000).toLocaleTimeString()}`);
+    console.log(`[Crucix] Next sweep at ${formatLocalTime(new Date(Date.now() + config.refreshIntervalMinutes * 60000))}`);
 
   } catch (err) {
     console.error('[Crucix] Sweep failed:', err.message);
