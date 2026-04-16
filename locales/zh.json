@@ -140,11 +140,25 @@
     "riskLabel": "风险",
     "confidenceLabel": "置信度"
   },
+  "firms": {
+    "source": "NASA FIRMS",
+    "no_key": "未配置 FIRMS_MAP_KEY",
+    "http_error": "HTTP 错误 {status}",
+    "set_key_hint": "请在环境变量中设置 FIRMS_MAP_KEY 以开启卫星火灾/打击探测。密钥可在 https://firms.modaps.eosdis.nasa.gov/api/area/ 免费获取",
+    "no_detections": "无探测结果",
+    "high_intensity_fires": "{region} 检测到高强度火灾：共 {count} 个探测点，FRP 均大于 10 兆瓦",
+    "elevated_night_activity": "{region} 夜间活动异常：共 {count} 个夜间探测点（可能为打击/战斗活动）"
+  },
   "regions": {
     "world": "全球",
     "americas": "美洲",
     "europe": "欧洲",
     "middleEast": "中东",
+    "ukraine": "乌克兰",
+    "iran": "伊朗",
+    "sudanHorn": "苏丹/非洲之角",
+    "myanmar": "缅甸",
+    "southAsia": "南亚",
     "asiaPacific": "亚太",
     "africa": "非洲"
   },

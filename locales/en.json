@@ -140,11 +140,25 @@
     "riskLabel": "Risk",
     "confidenceLabel": "confidence"
   },
+  "firms": {
+    "source": "NASA FIRMS",
+    "no_key": "No FIRMS_MAP_KEY",
+    "http_error": "HTTP {status}",
+    "set_key_hint": "Set FIRMS_MAP_KEY for satellite fire/strike detection. Free at https://firms.modaps.eosdis.nasa.gov/api/area/",
+    "no_detections": "No detections",
+    "high_intensity_fires": "HIGH INTENSITY FIRES in {region}: {count} detections >10MW FRP",
+    "elevated_night_activity": "ELEVATED NIGHT ACTIVITY in {region}: {count} night detections (potential strikes/combat)"
+  },
   "regions": {
     "world": "World",
     "americas": "Americas",
     "europe": "Europe",
     "middleEast": "Middle East",
+    "ukraine": "Ukraine",
+    "iran": "Iran",
+    "sudanHorn": "Sudan / Horn of Africa",
+    "myanmar": "Myanmar",
+    "southAsia": "South Asia",
     "asiaPacific": "Asia Pacific",
     "africa": "Africa"
   },

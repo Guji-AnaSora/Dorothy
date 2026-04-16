@@ -3,6 +3,7 @@
 // Detects military strikes, explosions, wildfires, industrial fires.
 
 import '../utils/env.mjs';
+import { t } from '../../lib/i18n.mjs';
 
 const FIRMS_BASE = 'https://firms.modaps.eosdis.nasa.gov/api/area/csv';
 
@@ -29,7 +30,7 @@ async function fetchFires(opts = {}) {
   } = opts;
 
   const key = process.env.FIRMS_MAP_KEY;
-  if (!key) return { error: 'No FIRMS_MAP_KEY' };
+  if (!key) return { error: t('firms.no_key') };
 
   const url = `${FIRMS_BASE}/${key}/${source}/${west},${south},${east},${north}/${days}`;
   const controller = new AbortController();
@@ -40,7 +41,7 @@ async function fetchFires(opts = {}) {
       headers: { 'User-Agent': 'Crucix/1.0' },
     });
     clearTimeout(timer);
-    if (!res.ok) return { error: `HTTP ${res.status}` };
+    if (!res.ok) return { error: t('firms.http_error', { status: res.status }) };
     const text = await res.text();
     return parseCSV(text);
   } catch (e) {
@@ -51,18 +52,18 @@ async function fetchFires(opts = {}) {
 
 // Key conflict/hotspot zones
 const HOTSPOTS = {
-  middleEast: { west: 30, south: 12, east: 65, north: 42, label: 'Middle East' },
-  ukraine: { west: 22, south: 44, east: 41, north: 53, label: 'Ukraine' },
-  iran: { west: 44, south: 25, east: 63, north: 40, label: 'Iran' },
-  sudanHorn: { west: 21, south: 2, east: 52, north: 23, label: 'Sudan / Horn of Africa' },
-  myanmar: { west: 92, south: 9, east: 102, north: 29, label: 'Myanmar' },
-  southAsia: { west: 60, south: 5, east: 98, north: 37, label: 'South Asia' },
+  middleEast: { west: 30, south: 12, east: 65, north: 42, labelKey: 'regions.middleEast' },
+  ukraine: { west: 22, south: 44, east: 41, north: 53, labelKey: 'regions.ukraine' },
+  iran: { west: 44, south: 25, east: 63, north: 40, labelKey: 'regions.iran' },
+  sudanHorn: { west: 21, south: 2, east: 52, north: 23, labelKey: 'regions.sudanHorn' },
+  myanmar: { west: 92, south: 9, east: 102, north: 29, labelKey: 'regions.myanmar' },
+  southAsia: { west: 60, south: 5, east: 98, north: 37, labelKey: 'regions.southAsia' },
 };
 
 // Analyze fire detections for potential military/strike activity
 function analyzeFires(fires, regionLabel) {
   if (!Array.isArray(fires) || fires.length === 0) {
-    return { region: regionLabel, totalDetections: 0, highConfidence: 0, highIntensity: [], summary: 'No detections' };
+    return { region: regionLabel, totalDetections: 0, highConfidence: 0, highIntensity: [], summary: t('firms.no_detections') };
   }
 
   const highConf = fires.filter(f => f.confidence === 'h' || f.confidence === 'high');
@@ -103,10 +104,10 @@ export async function briefing() {
   const key = process.env.FIRMS_MAP_KEY;
   if (!key) {
     return {
-      source: 'NASA FIRMS',
+      source: t('firms.source'),
       timestamp: new Date().toISOString(),
       status: 'no_key',
-      message: 'Set FIRMS_MAP_KEY for satellite fire/strike detection. Free at https://firms.modaps.eosdis.nasa.gov/api/area/',
+      message: t('firms.set_key_hint'),
     };
   }
 
@@ -115,7 +116,7 @@ export async function briefing() {
   const rawResults = await Promise.all(
     entries.map(async ([key, box]) => {
       const fires = await fetchFires({ ...box, days: 2 });
-      return { key, label: box.label, fires };
+      return { key, label: t(box.labelKey), fires };
     })
   );
 
@@ -128,15 +129,15 @@ export async function briefing() {
   const signals = [];
   for (const h of hotspots) {
     if (h.highIntensity?.length > 5) {
-      signals.push(`HIGH INTENSITY FIRES in ${h.region}: ${h.highIntensity.length} detections >10MW FRP`);
+      signals.push(t('firms.high_intensity_fires', { region: h.region, count: h.highIntensity.length }));
     }
     if (h.nightDetections > 20) {
-      signals.push(`ELEVATED NIGHT ACTIVITY in ${h.region}: ${h.nightDetections} night detections (potential strikes/combat)`);
+      signals.push(t('firms.elevated_night_activity', { region: h.region, count: h.nightDetections }));
     }
   }
 
   return {
-    source: 'NASA FIRMS',
+    source: t('firms.source'),
     timestamp: new Date().toISOString(),
     status: 'active',
     hotspots,
