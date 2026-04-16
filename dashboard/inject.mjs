@@ -12,6 +12,7 @@ import { exec } from 'child_process';
 import config from '../crucix.config.mjs';
 import { createLLMProvider } from '../lib/llm/index.mjs';
 import { generateLLMIdeas } from '../lib/llm/ideas.mjs';
+import { shouldTranslate, currentLanguage } from '../lib/i18n.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -437,6 +438,134 @@ export async function synthesize(data) {
   const tgTop = (tgData.topPosts || []).filter(p => isEnglish(p.text)).map(p => ({
     channel: p.channel, text: p.text?.substring(0, 200), views: p.views, date: p.date, urgentFlags: []
   }));
+
+  // Translate Telegram posts to Chinese if CRUCIX_LANG=zh and LLM is configured
+  // Split into batches to avoid hitting free model token limits
+  async function translateTelegramPosts(llmProvider) {
+    console.log(`[Translate] Starting translation... language=${currentLanguage}, shouldTranslate=${shouldTranslate()}, llm=${!!llmProvider}, configured=${!!llmProvider?.isConfigured}`);
+    
+    if (!shouldTranslate() || !llmProvider || !llmProvider.isConfigured) {
+      console.log('[Translate] Conditions not met, skipping');
+      return;
+    }
+
+    // Collect all texts to translate
+    const allEntries = [];
+
+    tgUrgent.forEach((p, idx) => {
+      if (p.text && p.text.trim()) {
+        allEntries.push({ array: 'urgent', index: idx, text: p.text });
+      }
+    });
+
+    tgTop.forEach((p, idx) => {
+      if (p.text && p.text.trim()) {
+        allEntries.push({ array: 'top', index: idx, text: p.text });
+      }
+    });
+
+    console.log(`[Translate] Collected ${allEntries.length} texts to translate`);
+    
+    if (allEntries.length === 0) {
+      console.log('[Translate] No texts to translate, skipping');
+      return;
+    }
+
+    const systemPrompt = `You are a professional open source intelligence translator. Translate the following English news content from Telegram OSINT channels into concise Simplified Chinese.
+
+Rules:
+- Maintain accuracy and completeness, especially for geopolitical and military terminology
+- Keep translations concise and fluent, suitable for display in a news ticker
+- Translate proper nouns (place names, organization names) according to standard Chinese usage
+- Ignore any country flag emoji (🇺🇸 🇮🇷 etc.) - do not treat them as images, just translate the text
+- Output ONLY a valid JSON array, no other content
+- Each item must have "index" (number matching input) and "translation" (string)`;
+
+    let totalSuccess = 0;
+    const batchSize = 8; // Process in smaller batches for free models
+    
+    for (let i = 0; i < allEntries.length; i += batchSize) {
+      const batch = allEntries.slice(i, i + batchSize);
+      const textsToTranslate = batch.map((entry, idx) => ({
+        index: idx,
+        text: entry.text
+      }));
+
+      console.log(`[Translate] Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(allEntries.length/batchSize)} (${batch.length} texts)`);
+
+      const userPrompt = JSON.stringify(textsToTranslate, null, 2);
+
+      try {
+        const response = await llmProvider.complete(
+          systemPrompt,
+          userPrompt,
+          { 
+            maxTokens: Math.max(500, batch.length * 100),
+            timeout: 90000
+          }
+        );
+
+        let translations;
+        let successCount = 0;
+        
+        try {
+          // Clean up response - extract JSON from possible markdown wrapping
+          let cleanResponse = (response.text || '').trim()
+            .replace(/^```json\s*/i, '')
+            .replace(/^```\s*/i, '')
+            .replace(/\s*```\s*$/i, '');
+          
+          // Remove any leading/trailing text outside JSON
+          const startIdx = cleanResponse.indexOf('[');
+          const endIdx = cleanResponse.lastIndexOf(']');
+          if (startIdx >= 0 && endIdx >= 0 && endIdx > startIdx) {
+            cleanResponse = cleanResponse.slice(startIdx, endIdx + 1);
+          }
+          
+          // Fix common JSON issues from free models
+          cleanResponse = cleanResponse
+            .replace(/\n+/g, '\n')                // Normalize newlines
+            .replace(/([^)\]}],\s*)\n*$/g, '$1]') // Add closing bracket if missing
+            .replace(/"\s*(?=\n|\r|})/g, '",')    // Fix missing commas after string
+            .replace(/,\s*([\]}])/g, '$1')       // Remove trailing commas
+            .replace(/([^\\])""/g, '$1"')        // Fix double quotes escaping issue
+            .trim();
+          
+          translations = JSON.parse(cleanResponse);
+        } catch (e) {
+          console.warn(`[Translate] Batch ${Math.floor(i/batchSize) + 1} parse failed:`, e.message);
+          continue;
+        }
+
+        // Apply translations
+        if (Array.isArray(translations)) {
+          translations.forEach(({ index, translation }) => {
+            if (typeof index === 'number' && index < batch.length && typeof translation === 'string') {
+              const originalEntry = batch[index];
+              const translated = translation.trim().substring(0, 200);
+              if (originalEntry.array === 'urgent') {
+                tgUrgent[originalEntry.index].translatedText = translated;
+              } else {
+                tgTop[originalEntry.index].translatedText = translated;
+              }
+              successCount++;
+              totalSuccess++;
+            }
+          });
+        }
+
+        console.log(`[Translate] Batch ${Math.floor(i/batchSize) + 1} done: ${successCount} translated`);
+      } catch (e) {
+        console.warn(`[Translate] Batch ${Math.floor(i/batchSize) + 1} failed:`, e.message);
+        // Continue with next batch
+      }
+    }
+
+    if (totalSuccess > 0) {
+      console.log(`[Translate] Total: Translated ${totalSuccess} Telegram posts to Chinese`);
+    }
+  }
+
   const who = (data.sources.WHO?.diseaseOutbreakNews || []).slice(0, 10).map(w => ({
     title: w.title?.substring(0, 120), date: w.date, summary: w.summary?.substring(0, 150)
   }));
@@ -598,6 +727,10 @@ export async function synthesize(data) {
   if (yfNatgas?.price) energy.natgas = yfNatgas.price;
   if (yfWti?.history?.length) energy.wtiRecent = yfWti.history.map(h => h.close);
 
+  // Translate Telegram posts if needed (requires LLM configured)
+  const llmProvider = createLLMProvider(config.llm);
+  await translateTelegramPosts(llmProvider);
+
   // Fetch RSS
   const news = await fetchAllNews();
 
@@ -648,7 +781,7 @@ function buildNewsFeed(rssNews, gdeltData, tgUrgent, tgTop) {
 
   // Telegram urgent
   for (const p of tgUrgent.slice(0, 10)) {
-    const text = (p.text || '').replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim();
+    const text = (p.translatedText || p.text || '').replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim();
     feed.push({
       headline: text.substring(0, 100), source: p.channel?.toUpperCase() || 'TELEGRAM',
       type: 'telegram', timestamp: p.date, region: 'OSINT', urgent: true
@@ -657,7 +790,7 @@ function buildNewsFeed(rssNews, gdeltData, tgUrgent, tgTop) {
 
   // Telegram top (non-urgent)
   for (const p of tgTop.slice(0, 5)) {
-    const text = (p.text || '').replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim();
+    const text = (p.translatedText || p.text || '').replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '').trim();
     feed.push({
       headline: text.substring(0, 100), source: p.channel?.toUpperCase() || 'TELEGRAM',
       type: 'telegram', timestamp: p.date, region: 'OSINT', urgent: false
