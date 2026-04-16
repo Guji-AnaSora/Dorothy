@@ -1,4 +1,4 @@
-name: Build & Publish Docker Image
+name: Build & Deploy to Remote Server
 
 on:
   push:
@@ -10,6 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  REMOTE_HOST: openclaw_mlxy
 
 jobs:
   build-and-push:
@@ -66,3 +67,60 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    environment: production
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ env.REMOTE_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to remote server
+        run: |
+          ssh ${{ env.REMOTE_HOST }} << 'EOF'
+            # Pull the latest image
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Stop and remove existing container if it exists
+            docker stop crucix || true
+            docker rm crucix || true
+
+            # Create app directory if it doesn't exist
+            mkdir -p ~/crucix
+
+            # Copy docker-compose.yml from GitHub
+            [ -f docker-compose.yml ] || cat > ~/crucix/docker-compose.yml << 'YAML'
+services:
+  crucix:
+    image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+    ports:
+      - "3117:3117"
+    restart: unless-stopped
+YAML
+
+            # Run with docker-compose
+            cd ~/crucix
+            docker-compose pull
+            docker-compose up -d
+
+            # Clean up old images
+            docker image prune -f
+
+            # Show container status
+            docker ps | grep crucix
+          EOF
