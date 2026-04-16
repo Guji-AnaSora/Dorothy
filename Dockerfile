@@ -2,6 +2,10 @@ FROM node:22-alpine
 
 WORKDIR /app
 
+# Default environment variables
+# Override at runtime with -e CRUCIX_LANG=xx
+ENV CRUCIX_LANG=en
+
 # Copy package files first for better layer caching
 COPY package*.json ./
 RUN npm install --production

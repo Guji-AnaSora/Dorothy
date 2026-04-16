@@ -101,7 +101,8 @@ jobs:
           ${{ if secrets.ACLED_PASSWORD }} echo "ACLED_PASSWORD=${{ secrets.ACLED_PASSWORD }}" >> .env; fi
           ${{ if secrets.CLOUDFLARE_API_TOKEN }} echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> .env; fi
           ${{ if secrets.PORT }} echo "PORT=${{ secrets.PORT }}" >> .env; fi
-          ${{ if secrets.CRUCIX_LANG }} echo "CRUCIX_LANG=${{ secrets.CRUCIX_LANG }}" >> .env; fi
+          # Always write CRUCIX_LANG, default to zh if not set in secrets
+          echo "CRUCIX_LANG=${{ secrets.CRUCIX_LANG != '' && secrets.CRUCIX_LANG || 'zh' }}" >> .env;
           ${{ if secrets.REFRESH_INTERVAL_MINUTES }} echo "REFRESH_INTERVAL_MINUTES=${{ secrets.REFRESH_INTERVAL_MINUTES }}" >> .env; fi
           ${{ if secrets.TZ }} echo "TZ=${{ secrets.TZ }}" >> .env; fi
           ${{ if secrets.HTTPS_PROXY }} echo "HTTPS_PROXY=${{ secrets.HTTPS_PROXY }}" >> .env; fi
@@ -153,4 +154,4 @@ YAML
             # Show container status and env
             echo "=== Container status ==="
             docker ps | grep crucix
-          EOF
+EOF
