@@ -93,33 +93,32 @@ jobs:
       - name: Generate .env file from GitHub Secrets
         run: |
           touch .env
-          if [ -n "${{ secrets.FRED_API_KEY }}" ]; then echo "FRED_API_KEY=${{ secrets.FRED_API_KEY }}" >> .env; fi
-          if [ -n "${{ secrets.FIRMS_MAP_KEY }}" ]; then echo "FIRMS_MAP_KEY=${{ secrets.FIRMS_MAP_KEY }}" >> .env; fi
-          if [ -n "${{ secrets.EIA_API_KEY }}" ]; then echo "EIA_API_KEY=${{ secrets.EIA_API_KEY }}" >> .env; fi
-          if [ -n "${{ secrets.AISSTREAM_API_KEY }}" ]; then echo "AISSTREAM_API_KEY=${{ secrets.AISSTREAM_API_KEY }}" >> .env; fi
-          if [ -n "${{ secrets.ACLED_EMAIL }}" ]; then echo "ACLED_EMAIL=${{ secrets.ACLED_EMAIL }}" >> .env; fi
-          if [ -n "${{ secrets.ACLED_PASSWORD }}" ]; then echo "ACLED_PASSWORD=${{ secrets.ACLED_PASSWORD }}" >> .env; fi
-          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> .env; fi
-          if [ -n "${{ secrets.PORT }}" ]; then echo "PORT=${{ secrets.PORT }}" >> .env; fi
-          # Always write CRUCIX_LANG, default to zh if not set in secrets
+          [ -n "${{ secrets.FRED_API_KEY }}" ] && echo "FRED_API_KEY=${{ secrets.FRED_API_KEY }}" >> .env
+          [ -n "${{ secrets.FIRMS_MAP_KEY }}" ] && echo "FIRMS_MAP_KEY=${{ secrets.FIRMS_MAP_KEY }}" >> .env
+          [ -n "${{ secrets.EIA_API_KEY }}" ] && echo "EIA_API_KEY=${{ secrets.EIA_API_KEY }}" >> .env
+          [ -n "${{ secrets.AISSTREAM_API_KEY }}" ] && echo "AISSTREAM_API_KEY=${{ secrets.AISSTREAM_API_KEY }}" >> .env
+          [ -n "${{ secrets.ACLED_EMAIL }}" ] && echo "ACLED_EMAIL=${{ secrets.ACLED_EMAIL }}" >> .env
+          [ -n "${{ secrets.ACLED_PASSWORD }}" ] && echo "ACLED_PASSWORD=${{ secrets.ACLED_PASSWORD }}" >> .env
+          [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> .env
+          [ -n "${{ secrets.PORT }}" ] && echo "PORT=${{ secrets.PORT }}" >> .env
           echo "CRUCIX_LANG=${{ secrets.CRUCIX_LANG != '' && secrets.CRUCIX_LANG || 'zh' }}" >> .env
-          if [ -n "${{ secrets.REFRESH_INTERVAL_MINUTES }}" ]; then echo "REFRESH_INTERVAL_MINUTES=${{ secrets.REFRESH_INTERVAL_MINUTES }}" >> .env; fi
-          if [ -n "${{ secrets.TZ }}" ]; then echo "TZ=${{ secrets.TZ }}" >> .env; fi
-          if [ -n "${{ secrets.HTTPS_PROXY }}" ]; then echo "HTTPS_PROXY=${{ secrets.HTTPS_PROXY }}" >> .env; fi
-          if [ -n "${{ secrets.LLM_PROVIDER }}" ]; then echo "LLM_PROVIDER=${{ secrets.LLM_PROVIDER }}" >> .env; fi
-          if [ -n "${{ secrets.LLM_API_KEY }}" ]; then echo "LLM_API_KEY=${{ secrets.LLM_API_KEY }}" >> .env; fi
-          if [ -n "${{ secrets.LLM_MODEL }}" ]; then echo "LLM_MODEL=${{ secrets.LLM_MODEL }}" >> .env; fi
-          if [ -n "${{ secrets.LLM_BASE_URL }}" ]; then echo "LLM_BASE_URL=${{ secrets.LLM_BASE_URL }}" >> .env; fi
-          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env; fi
-          if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env; fi
+          [ -n "${{ secrets.REFRESH_INTERVAL_MINUTES }}" ] && echo "REFRESH_INTERVAL_MINUTES=${{ secrets.REFRESH_INTERVAL_MINUTES }}" >> .env
+          [ -n "${{ secrets.TZ }}" ] && echo "TZ=${{ secrets.TZ }}" >> .env
+          [ -n "${{ secrets.HTTPS_PROXY }}" ] && echo "HTTPS_PROXY=${{ secrets.HTTPS_PROXY }}" >> .env
+          [ -n "${{ secrets.LLM_PROVIDER }}" ] && echo "LLM_PROVIDER=${{ secrets.LLM_PROVIDER }}" >> .env
+          [ -n "${{ secrets.LLM_API_KEY }}" ] && echo "LLM_API_KEY=${{ secrets.LLM_API_KEY }}" >> .env
+          [ -n "${{ secrets.LLM_MODEL }}" ] && echo "LLM_MODEL=${{ secrets.LLM_MODEL }}" >> .env
+          [ -n "${{ secrets.LLM_BASE_URL }}" ] && echo "LLM_BASE_URL=${{ secrets.LLM_BASE_URL }}" >> .env
+          [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env
+          [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ] && echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env
 
-      - name: Deploy to remote server
+      - name: Copy files to remote server
         run: |
-          # Copy .env file to remote server
           cat .env | ssh ${{ env.REMOTE_HOST }} 'cat > ~/crucix/.env'
 
-          # Create docker-compose.yml locally first
-          cat > /tmp/docker-compose.yml <<'COMPOSE_EOF'
+      - name: Create docker-compose.yml on remote server
+        run: |
+          ssh ${{ env.REMOTE_HOST }} 'cat > ~/crucix/docker-compose.yml' <<'EOF'
 services:
   crucix:
     image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -130,28 +129,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./runs:/app/runs
-COMPOSE_EOF
+EOF
 
-          # Copy docker-compose.yml to remote server
-          scp /tmp/docker-compose.yml ${{ env.REMOTE_HOST }}:~/crucix/docker-compose.yml
-
-          # Execute deployment commands on remote server
-          ssh ${{ env.REMOTE_HOST }} 'bash -s' <<'SSH_EOF'
-            # Pull the latest image
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-            # Create app directory if it doesn't exist
-            mkdir -p ~/crucix
-
-            # Run with docker-compose
-            cd ~/crucix
-            docker-compose pull
-            docker-compose up -d
-
-            # Clean up old images
-            docker image prune -f
-
-            # Show container status and env
-            echo "=== Container status ==="
-            docker ps | grep crucix
-SSH_EOF
+      - name: Deploy on remote server
+        run: |
+          ssh ${{ env.REMOTE_HOST }} 'docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && cd ~/crucix && docker-compose up -d && docker image prune -f'
