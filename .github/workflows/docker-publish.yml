@@ -9,7 +9,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -43,12 +42,16 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set lowercase image name
+        id: image_name
+        run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.REGISTRY }}/${{ steps.image_name.outputs.IMAGE_NAME }}
             ${{ vars.DOCKERHUB_ENABLED == 'true' && format('{0}/{1}', secrets.DOCKERHUB_USERNAME, 'crucix') || '' }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
@@ -89,6 +92,10 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
+      - name: Set lowercase image name
+        id: image_name
+        run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
       - name: Generate .env file from GitHub Secrets
         run: |
           touch .env
@@ -121,4 +128,4 @@ jobs:
 
       - name: Deploy on remote server
         run: |
-          ssh root@${{ secrets.REMOTE_HOST }} 'docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && cd ~/crucix && docker-compose up -d && docker image prune -f'
+          ssh root@${{ secrets.REMOTE_HOST }} 'docker pull ${{ env.REGISTRY }}/${{ steps.image_name.outputs.IMAGE_NAME }}:latest && cd ~/crucix && docker-compose up -d && docker image prune -f'
