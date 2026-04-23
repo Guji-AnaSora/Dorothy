@@ -118,19 +118,8 @@ jobs:
           # Copy .env file to remote server
           cat .env | ssh ${{ env.REMOTE_HOST }} 'cat > ~/crucix/.env'
 
-          ssh ${{ env.REMOTE_HOST }} << 'EOF'
-            # Pull the latest image
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-            # Stop and remove existing container if it exists
-            docker stop crucix || true
-            docker rm crucix || true
-
-            # Create app directory if it doesn't exist
-            mkdir -p ~/crucix
-
-            # Create docker-compose.yml with env_file
-            cat > ~/crucix/docker-compose.yml <<-'YAML'
+          # Create docker-compose.yml locally first
+          cat > /tmp/docker-compose.yml <<'COMPOSE_EOF'
 services:
   crucix:
     image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
@@ -141,7 +130,18 @@ services:
     restart: unless-stopped
     volumes:
       - ./runs:/app/runs
-YAML
+COMPOSE_EOF
+
+          # Copy docker-compose.yml to remote server
+          scp /tmp/docker-compose.yml ${{ env.REMOTE_HOST }}:~/crucix/docker-compose.yml
+
+          # Execute deployment commands on remote server
+          ssh ${{ env.REMOTE_HOST }} 'bash -s' <<'SSH_EOF'
+            # Pull the latest image
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+            # Create app directory if it doesn't exist
+            mkdir -p ~/crucix
 
             # Run with docker-compose
             cd ~/crucix
@@ -154,4 +154,4 @@ YAML
             # Show container status and env
             echo "=== Container status ==="
             docker ps | grep crucix
-EOF
+SSH_EOF
