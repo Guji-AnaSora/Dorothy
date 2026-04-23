@@ -116,20 +116,9 @@ jobs:
         run: |
           cat .env | ssh ${{ env.REMOTE_HOST }} 'cat > ~/crucix/.env'
 
-      - name: Create docker-compose.yml on remote server
+      - name: Copy docker-compose.yml to remote server
         run: |
-          ssh ${{ env.REMOTE_HOST }} 'cat > ~/crucix/docker-compose.yml' <<'EOF'
-services:
-  crucix:
-    image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-    ports:
-      - "3117:3117"
-    env_file:
-      - .env
-    restart: unless-stopped
-    volumes:
-      - ./runs:/app/runs
-EOF
+          scp docker-compose.yml ${{ env.REMOTE_HOST }}:~/crucix/docker-compose.yml
 
       - name: Deploy on remote server
         run: |

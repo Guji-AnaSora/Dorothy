@@ -1,10 +1,10 @@
 services:
   crucix:
-    build: .
+    image: ghcr.io/guji-anasora/dorothy:latest
     ports:
-      - "${PORT:-3117}:${PORT:-3117}"
+      - "3117:3117"
     env_file:
       - .env
+    restart: unless-stopped
     volumes:
       - ./runs:/app/runs
-    restart: unless-stopped
