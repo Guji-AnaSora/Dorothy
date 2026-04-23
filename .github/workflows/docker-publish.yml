@@ -10,7 +10,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  REMOTE_HOST: openclaw_mlxy
 
 jobs:
   build-and-push:
@@ -88,7 +87,7 @@ jobs:
       - name: Add known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ env.REMOTE_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
 
       - name: Generate .env file from GitHub Secrets
         run: |
@@ -114,12 +113,12 @@ jobs:
 
       - name: Copy files to remote server
         run: |
-          cat .env | ssh ${{ env.REMOTE_HOST }} 'cat > ~/crucix/.env'
+          cat .env | ssh ${{ secrets.REMOTE_HOST }} 'cat > ~/crucix/.env'
 
       - name: Copy docker-compose.yml to remote server
         run: |
-          scp docker-compose.yml ${{ env.REMOTE_HOST }}:~/crucix/docker-compose.yml
+          scp docker-compose.yml ${{ secrets.REMOTE_HOST }}:~/crucix/docker-compose.yml
 
       - name: Deploy on remote server
         run: |
-          ssh ${{ env.REMOTE_HOST }} 'docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && cd ~/crucix && docker-compose up -d && docker image prune -f'
+          ssh ${{ secrets.REMOTE_HOST }} 'docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && cd ~/crucix && docker-compose up -d && docker image prune -f'
