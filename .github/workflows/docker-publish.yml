@@ -87,7 +87,7 @@ jobs:
       - name: Add known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Generate .env file from GitHub Secrets
         run: |
@@ -113,12 +113,12 @@ jobs:
 
       - name: Copy files to remote server
         run: |
-          cat .env | ssh ${{ secrets.REMOTE_HOST }} 'cat > ~/crucix/.env'
+          cat .env | ssh root@${{ secrets.REMOTE_HOST }} 'cat > ~/crucix/.env'
 
       - name: Copy docker-compose.yml to remote server
         run: |
-          scp docker-compose.yml ${{ secrets.REMOTE_HOST }}:~/crucix/docker-compose.yml
+          scp docker-compose.yml root@${{ secrets.REMOTE_HOST }}:~/crucix/docker-compose.yml
 
       - name: Deploy on remote server
         run: |
-          ssh ${{ secrets.REMOTE_HOST }} 'docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && cd ~/crucix && docker-compose up -d && docker image prune -f'
+          ssh root@${{ secrets.REMOTE_HOST }} 'docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest && cd ~/crucix && docker-compose up -d && docker image prune -f'
