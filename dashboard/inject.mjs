@@ -439,39 +439,13 @@ export async function synthesize(data) {
     channel: p.channel, text: p.text?.substring(0, 200), views: p.views, date: p.date, urgentFlags: []
   }));
 
-  // Translate Telegram posts to Chinese if CRUCIX_LANG=zh and LLM is configured
-  // Split into batches to avoid hitting free model token limits
-  async function translateTelegramPosts(llmProvider) {
-    console.log(`[Translate] Starting translation... language=${currentLanguage}, shouldTranslate=${shouldTranslate()}, llm=${!!llmProvider}, configured=${!!llmProvider?.isConfigured}`);
-    
-    if (!shouldTranslate() || !llmProvider || !llmProvider.isConfigured) {
-      console.log('[Translate] Conditions not met, skipping');
-      return;
+  // Generic text translation function
+  async function translateTexts(texts, llmProvider, context = 'news') {
+    if (!shouldTranslate() || !llmProvider || !llmProvider.isConfigured || texts.length === 0) {
+      return [];
     }
 
-    // Collect all texts to translate
-    const allEntries = [];
-
-    tgUrgent.forEach((p, idx) => {
-      if (p.text && p.text.trim()) {
-        allEntries.push({ array: 'urgent', index: idx, text: p.text });
-      }
-    });
-
-    tgTop.forEach((p, idx) => {
-      if (p.text && p.text.trim()) {
-        allEntries.push({ array: 'top', index: idx, text: p.text });
-      }
-    });
-
-    console.log(`[Translate] Collected ${allEntries.length} texts to translate`);
-    
-    if (allEntries.length === 0) {
-      console.log('[Translate] No texts to translate, skipping');
-      return;
-    }
-
-    const systemPrompt = `You are a professional open source intelligence translator. Translate the following English news content from Telegram OSINT channels into concise Simplified Chinese.
+    const systemPrompt = `You are a professional open source intelligence translator. Translate the following English news content into concise Simplified Chinese.
 
 Rules:
 - Maintain accuracy and completeness, especially for geopolitical and military terminology
@@ -481,24 +455,22 @@ Rules:
 - Output ONLY a valid JSON array, no other content
 - Each item must have "index" (number matching input) and "translation" (string)`;
 
-    let totalSuccess = 0;
-    const batchSize = 8; // Process in smaller batches for free models
+    const batchSize = 8;
+    const results = new Array(texts.length).fill(null);
     
-    for (let i = 0; i < allEntries.length; i += batchSize) {
-      const batch = allEntries.slice(i, i + batchSize);
-      const textsToTranslate = batch.map((entry, idx) => ({
+    for (let i = 0; i < texts.length; i += batchSize) {
+      const batch = texts.slice(i, i + batchSize);
+      const textsToTranslate = batch.map((text, idx) => ({
         index: idx,
-        text: entry.text
+        text: text.substring(0, 300) // Limit text length
       }));
 
-      console.log(`[Translate] Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(allEntries.length/batchSize)} (${batch.length} texts)`);
-
-      const userPrompt = JSON.stringify(textsToTranslate, null, 2);
+      console.log(`[Translate] ${context}: Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(texts.length/batchSize)} (${batch.length} texts)`);
 
       try {
         const response = await llmProvider.complete(
           systemPrompt,
-          userPrompt,
+          JSON.stringify(textsToTranslate, null, 2),
           { 
             maxTokens: Math.max(500, batch.length * 100),
             timeout: 90000
@@ -506,64 +478,127 @@ Rules:
         );
 
         let translations;
-        let successCount = 0;
         
         try {
-          // Clean up response - extract JSON from possible markdown wrapping
           let cleanResponse = (response.text || '').trim()
             .replace(/^```json\s*/i, '')
             .replace(/^```\s*/i, '')
             .replace(/\s*```\s*$/i, '');
           
-          // Remove any leading/trailing text outside JSON
           const startIdx = cleanResponse.indexOf('[');
           const endIdx = cleanResponse.lastIndexOf(']');
           if (startIdx >= 0 && endIdx >= 0 && endIdx > startIdx) {
             cleanResponse = cleanResponse.slice(startIdx, endIdx + 1);
           }
           
-          // Fix common JSON issues from free models
           cleanResponse = cleanResponse
-            .replace(/\n+/g, '\n')                // Normalize newlines
-            .replace(/([^)\]}],\s*)\n*$/g, '$1]') // Add closing bracket if missing
-            .replace(/"\s*(?=\n|\r|})/g, '",')    // Fix missing commas after string
-            .replace(/,\s*([\]}])/g, '$1')       // Remove trailing commas
-            .replace(/([^\\])""/g, '$1"')        // Fix double quotes escaping issue
+            .replace(/\n+/g, '\n')
+            .replace(/([^)\]}],\s*)\n*$/g, '$1]')
+            .replace(/"\s*(?=\n|\r|})/g, '",')
+            .replace(/,\s*([\]}])/g, '$1')
+            .replace(/([^\\])""/g, '$1"')
             .trim();
           
           translations = JSON.parse(cleanResponse);
         } catch (e) {
-          console.warn(`[Translate] Batch ${Math.floor(i/batchSize) + 1} parse failed:`, e.message);
+          console.warn(`[Translate] ${context}: Batch ${Math.floor(i/batchSize) + 1} parse failed:`, e.message);
           continue;
         }
 
-        // Apply translations
         if (Array.isArray(translations)) {
           translations.forEach(({ index, translation }) => {
             if (typeof index === 'number' && index < batch.length && typeof translation === 'string') {
-              const originalEntry = batch[index];
-              const translated = translation.trim().substring(0, 200);
-              if (originalEntry.array === 'urgent') {
-                tgUrgent[originalEntry.index].translatedText = translated;
-              } else {
-                tgTop[originalEntry.index].translatedText = translated;
-              }
-              successCount++;
-              totalSuccess++;
+              results[i + index] = translation.trim().substring(0, 200);
             }
           });
         }
 
-        console.log(`[Translate] Batch ${Math.floor(i/batchSize) + 1} done: ${successCount} translated`);
+        console.log(`[Translate] ${context}: Batch ${Math.floor(i/batchSize) + 1} done`);
       } catch (e) {
-        console.warn(`[Translate] Batch ${Math.floor(i/batchSize) + 1} failed:`, e.message);
-        // Continue with next batch
+        console.warn(`[Translate] ${context}: Batch ${Math.floor(i/batchSize) + 1} failed:`, e.message);
       }
     }
 
-    if (totalSuccess > 0) {
-      console.log(`[Translate] Total: Translated ${totalSuccess} Telegram posts to Chinese`);
+    const successCount = results.filter(r => r !== null).length;
+    console.log(`[Translate] ${context}: Total ${successCount}/${texts.length} translated`);
+    return results;
+  }
+
+  // Translate Telegram posts to Chinese if CRUCIX_LANG=zh and LLM is configured
+  async function translateTelegramPosts(llmProvider) {
+    console.log(`[Translate] Telegram: Starting translation... language=${currentLanguage}, shouldTranslate=${shouldTranslate()}, llm=${!!llmProvider}, configured=${!!llmProvider?.isConfigured}`);
+    
+    if (!shouldTranslate() || !llmProvider || !llmProvider.isConfigured) {
+      console.log('[Translate] Telegram: Conditions not met, skipping');
+      return;
     }
+
+    // Collect all texts to translate
+    const allEntries = [];
+    const entryMap = []; // Keep track of which array and index each entry belongs to
+
+    tgUrgent.forEach((p, idx) => {
+      if (p.text && p.text.trim()) {
+        allEntries.push(p.text);
+        entryMap.push({ array: 'urgent', index: idx });
+      }
+    });
+
+    tgTop.forEach((p, idx) => {
+      if (p.text && p.text.trim()) {
+        allEntries.push(p.text);
+        entryMap.push({ array: 'top', index: idx });
+      }
+    });
+
+    console.log(`[Translate] Telegram: Collected ${allEntries.length} texts to translate`);
+    
+    if (allEntries.length === 0) {
+      console.log('[Translate] Telegram: No texts to translate, skipping');
+      return;
+    }
+
+    const translations = await translateTexts(allEntries, llmProvider, 'Telegram');
+    
+    // Apply translations
+    translations.forEach((translated, idx) => {
+      if (translated && entryMap[idx]) {
+        const { array, index } = entryMap[idx];
+        if (array === 'urgent') {
+          tgUrgent[index].translatedText = translated;
+        } else {
+          tgTop[index].translatedText = translated;
+        }
+      }
+    });
+  }
+
+  // Translate RSS news titles to Chinese if CRUCIX_LANG=zh and LLM is configured
+  async function translateRSSNews(rssNews, llmProvider) {
+    console.log(`[Translate] RSS: Starting translation... rssNews=${rssNews.length}`);
+    
+    if (!shouldTranslate() || !llmProvider || !llmProvider.isConfigured || rssNews.length === 0) {
+      console.log('[Translate] RSS: Conditions not met, skipping');
+      return;
+    }
+
+    // Filter only English titles
+    const englishNews = rssNews.filter(n => isEnglish(n.title));
+    console.log(`[Translate] RSS: Found ${englishNews.length} English titles to translate`);
+    
+    if (englishNews.length === 0) {
+      return;
+    }
+
+    const titles = englishNews.map(n => n.title);
+    const translations = await translateTexts(titles, llmProvider, 'RSS');
+    
+    // Apply translations back to the news objects
+    translations.forEach((translated, idx) => {
+      if (translated) {
+        englishNews[idx].translatedTitle = translated;
+      }
+    });
   }
 
   const who = (data.sources.WHO?.diseaseOutbreakNews || []).slice(0, 10).map(w => ({
@@ -733,6 +768,9 @@ Rules:
 
   // Fetch RSS
   const news = await fetchAllNews();
+  
+  // Translate RSS news titles if needed
+  await translateRSSNews(news, llmProvider);
 
   const V2 = {
     meta: data.crucix, air, thermal, tSignals, chokepoints, nuke, nukeSignals,
@@ -760,10 +798,11 @@ Rules:
 function buildNewsFeed(rssNews, gdeltData, tgUrgent, tgTop) {
   const feed = [];
 
-  // RSS news
+  // RSS news - use translated title if available
   for (const n of rssNews) {
     feed.push({
-      headline: n.title, source: n.source, type: 'rss',
+      headline: (n.translatedTitle || n.title).substring(0, 100), 
+      source: n.source, type: 'rss',
       timestamp: n.date, region: n.region, urgent: false, url: n.url
     });
   }
