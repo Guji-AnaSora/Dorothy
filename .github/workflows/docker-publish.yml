@@ -93,25 +93,25 @@ jobs:
       - name: Generate .env file from GitHub Secrets
         run: |
           touch .env
-          ${{ if secrets.FRED_API_KEY }} echo "FRED_API_KEY=${{ secrets.FRED_API_KEY }}" >> .env; fi
-          ${{ if secrets.FIRMS_MAP_KEY }} echo "FIRMS_MAP_KEY=${{ secrets.FIRMS_MAP_KEY }}" >> .env; fi
-          ${{ if secrets.EIA_API_KEY }} echo "EIA_API_KEY=${{ secrets.EIA_API_KEY }}" >> .env; fi
-          ${{ if secrets.AISSTREAM_API_KEY }} echo "AISSTREAM_API_KEY=${{ secrets.AISSTREAM_API_KEY }}" >> .env; fi
-          ${{ if secrets.ACLED_EMAIL }} echo "ACLED_EMAIL=${{ secrets.ACLED_EMAIL }}" >> .env; fi
-          ${{ if secrets.ACLED_PASSWORD }} echo "ACLED_PASSWORD=${{ secrets.ACLED_PASSWORD }}" >> .env; fi
-          ${{ if secrets.CLOUDFLARE_API_TOKEN }} echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> .env; fi
-          ${{ if secrets.PORT }} echo "PORT=${{ secrets.PORT }}" >> .env; fi
+          if [ -n "${{ secrets.FRED_API_KEY }}" ]; then echo "FRED_API_KEY=${{ secrets.FRED_API_KEY }}" >> .env; fi
+          if [ -n "${{ secrets.FIRMS_MAP_KEY }}" ]; then echo "FIRMS_MAP_KEY=${{ secrets.FIRMS_MAP_KEY }}" >> .env; fi
+          if [ -n "${{ secrets.EIA_API_KEY }}" ]; then echo "EIA_API_KEY=${{ secrets.EIA_API_KEY }}" >> .env; fi
+          if [ -n "${{ secrets.AISSTREAM_API_KEY }}" ]; then echo "AISSTREAM_API_KEY=${{ secrets.AISSTREAM_API_KEY }}" >> .env; fi
+          if [ -n "${{ secrets.ACLED_EMAIL }}" ]; then echo "ACLED_EMAIL=${{ secrets.ACLED_EMAIL }}" >> .env; fi
+          if [ -n "${{ secrets.ACLED_PASSWORD }}" ]; then echo "ACLED_PASSWORD=${{ secrets.ACLED_PASSWORD }}" >> .env; fi
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then echo "CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}" >> .env; fi
+          if [ -n "${{ secrets.PORT }}" ]; then echo "PORT=${{ secrets.PORT }}" >> .env; fi
           # Always write CRUCIX_LANG, default to zh if not set in secrets
-          echo "CRUCIX_LANG=${{ secrets.CRUCIX_LANG != '' && secrets.CRUCIX_LANG || 'zh' }}" >> .env;
-          ${{ if secrets.REFRESH_INTERVAL_MINUTES }} echo "REFRESH_INTERVAL_MINUTES=${{ secrets.REFRESH_INTERVAL_MINUTES }}" >> .env; fi
-          ${{ if secrets.TZ }} echo "TZ=${{ secrets.TZ }}" >> .env; fi
-          ${{ if secrets.HTTPS_PROXY }} echo "HTTPS_PROXY=${{ secrets.HTTPS_PROXY }}" >> .env; fi
-          ${{ if secrets.LLM_PROVIDER }} echo "LLM_PROVIDER=${{ secrets.LLM_PROVIDER }}" >> .env; fi
-          ${{ if secrets.LLM_API_KEY }} echo "LLM_API_KEY=${{ secrets.LLM_API_KEY }}" >> .env; fi
-          ${{ if secrets.LLM_MODEL }} echo "LLM_MODEL=${{ secrets.LLM_MODEL }}" >> .env; fi
-          ${{ if secrets.LLM_BASE_URL }} echo "LLM_BASE_URL=${{ secrets.LLM_BASE_URL }}" >> .env; fi
-          ${{ if secrets.TELEGRAM_BOT_TOKEN }} echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env; fi
-          ${{ if secrets.TELEGRAM_CHAT_ID }} echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env; fi
+          echo "CRUCIX_LANG=${{ secrets.CRUCIX_LANG != '' && secrets.CRUCIX_LANG || 'zh' }}" >> .env
+          if [ -n "${{ secrets.REFRESH_INTERVAL_MINUTES }}" ]; then echo "REFRESH_INTERVAL_MINUTES=${{ secrets.REFRESH_INTERVAL_MINUTES }}" >> .env; fi
+          if [ -n "${{ secrets.TZ }}" ]; then echo "TZ=${{ secrets.TZ }}" >> .env; fi
+          if [ -n "${{ secrets.HTTPS_PROXY }}" ]; then echo "HTTPS_PROXY=${{ secrets.HTTPS_PROXY }}" >> .env; fi
+          if [ -n "${{ secrets.LLM_PROVIDER }}" ]; then echo "LLM_PROVIDER=${{ secrets.LLM_PROVIDER }}" >> .env; fi
+          if [ -n "${{ secrets.LLM_API_KEY }}" ]; then echo "LLM_API_KEY=${{ secrets.LLM_API_KEY }}" >> .env; fi
+          if [ -n "${{ secrets.LLM_MODEL }}" ]; then echo "LLM_MODEL=${{ secrets.LLM_MODEL }}" >> .env; fi
+          if [ -n "${{ secrets.LLM_BASE_URL }}" ]; then echo "LLM_BASE_URL=${{ secrets.LLM_BASE_URL }}" >> .env; fi
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> .env; fi
+          if [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then echo "TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}" >> .env; fi
 
       - name: Deploy to remote server
         run: |
