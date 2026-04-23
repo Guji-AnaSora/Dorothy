@@ -130,7 +130,7 @@ jobs:
             mkdir -p ~/crucix
 
             # Create docker-compose.yml with env_file
-            cat > ~/crucix/docker-compose.yml << 'YAML'
+            cat > ~/crucix/docker-compose.yml <<-'YAML'
 services:
   crucix:
     image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
